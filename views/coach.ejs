@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%=school%> score card</title>
+    <link rel="stylesheet" href="/coach.css">
+</head>
+<body>
+    <div id="oheader">
+        <p>page header with links</p>
+        <a href="/?arrivedFrom=loggedout"><button>logout</button></a>
+    </div>
+    <div id="otitle">
+        <h1>Central Jersey Math League</h1>
+    </div>
+    <div class="obuttonbar">
+        <form action="/coach" method="POST">
+            <input type="checkbox" checked="checked" name="coachId" value="<%=coachId%>" class="invisible">
+            <input type="checkbox" checked="checked" name="session" value="<%=session%>" class="invisible">
+            <button type="submit" class="oleftbutton"<%if(state == "readOnly"){%> <%} else {%> disabled<%}%> name="requestType" value="enterNames">Enter Names</button>
+            <button type="submit" class="orightbutton"<%if(state == "readOnly"){%> <%} else {%> disabled<%}%> name="requestType" value="enterScores">Enter Scores</button>
+        </form>
+    </div>
+    <!-- Sort the students by first name -->
+    <%
+    students.sort((a,b)=>{
+        nameA = a.first.toUpperCase();
+        nameB = b.first.toUpperCase();
+        if(nameA>nameB){
+            return (1);
+        }
+        if(nameA<nameB){
+            return (-1);
+        }
+        if(nameA===nameB){
+            return (0);
+        }
+    });
+    %>
+        <!-- then sort the students by middle name -->
+        <%
+        students.sort((a,b)=>{
+            nameA = a.middle.toUpperCase();
+            nameB = b.middle.toUpperCase();
+            if(nameA>nameB){return 1}
+            if(nameA<nameB){return -1}
+            if(nameA===nameB){return 0}
+        });
+    %>
+    <!-- then sort the students by last name -->
+    <%
+    students.sort((a,b)=>{
+        nameA = a.last.toUpperCase();
+        nameB = b.last.toUpperCase();
+        if(nameA>nameB){return 1}
+        if(nameA<nameB){return -1}
+        if(nameA===nameB){return 0}
+    });
+    %>
+    <!-- remove deleted students -->
+    <% 
+        students.forEach((student)=>{ 
+            if(student.last.startsWith("!")){
+                var idx = students.findIndex((a)=>{return (a.iD == student.iD)});
+                students.splice(idx,1);
+            }
+        });
+    %>
+    <!-- make full-names -->
+    <% 
+        students.forEach((student)=>{
+            if (student.middle == "") {
+                student.fullName=student.first + " " + student.last;
+            } else {
+                student.fullName == student.first + " " + student.middle + " " + student.last;
+            }
+        })
+     %>
+
+    <% if (locals.duplicates) {%>
+        <p id="multipleerror">You must not enter the same student multiple times</p>
+    <%}%>
+    <div id="viewwindow">
+       <div id="scoresheet">
+            <div class="headerline">
+                <div class="ib pushleft"></div>
+                <div class="ib pushright"><p></p>Place: <em class="r">TBD</em></p></div>
+                <h2 id="scoresheettitle" class="ib">Central Jersey Math League</h2>
+            </div>
+            <div class="headerline"><%=school%> Score Sheet</div>
+            <div class="headerline leftjustify">
+                <!-- Next: How can I get these lines to stop overflowing their boxes? -->
+                <div class="wideheader">Coach:<br><span class="big spacer" max-length="26"><%=coach%></span></div
+                ><div class="wideheader">Venue:<br><span class="big spacer" ><%=venue%></span></div
+                ><div class="narrowheader">Date:<br><span class="big spacer"><%=cDate%></span></div
+                ><div class="narrowheader">&emsp;Contest No:<br>&emsp;&emsp;&emsp;&emsp; <span class="big spacer"><%=cNumber%></span></div>
+            </div>
+            <!-- Next: Put in another line so that the JV and Varsity team scores are computed DONE -->
+             <!-- Remaining Steps:
+             1. Finish the css code to lay out the coach entry page completely, move down the Varsity and JV labels DONE
+             2. Turn the html code into ejs code, making the dropdowns functional DONE
+             3. Add functionality to the score boxes and the buttons
+             4. Add a way for coaches to manage their team roster. Change data structure to separate first, 
+             middle, last names (functionality only, see step 9)
+             5. Make an administrator login with controls to open/close each entry for every or for specific coaches, 
+             and to see who is logged in and to log them out (functionality only, see step 9)
+             6. Research providers of free virtual servers. Select and sign up for a service
+             7. Connect the server to a database and rewrite the database read and write routines
+             8. Give the administrator the option of turning on the team-contest mode. Write the corresponding code in coach.ejs.
+             9. Review the existing CSS and extend the CSS to the other three pages (login, 
+             admin, roster management), making a common color and font and button scheme and using the same header and footer.
+             10. Require password authentication on every http request and research good security practices
+             11. Find a way to send the server data to a Google Sheet (Google API?)
+             12. Make Administrator function to clear out a contest and set up the next contest
+             13. Deliver a score sheet to the coach--What file format will it be? -->
+            <div id="names", class="ib pushleft">
+                <div id="numbering", class="ib pushleft">
+                    <div class="big spacer"></div>
+                    <% for (var j=1; j<6; j++){%>
+                        <div class="number"><%=j%></div>
+                    <%}%>
+                    <div class="big spacer"></div>
+                    <% for (var j=6; j<11; j++){%>
+                        <div class="number"><%=j%></div>
+                    <%}%>
+                    <div class="big spacer"></div>
+
+                </div>
+                <div id="dropdowns", class="ib pushright">
+                    <div class="spacer">Varsity team: players 1 through 5</div>
+                    <form action="/coach" method="POST" id="selectnames">
+                        <input type="checkbox" checked="checked" name="coachId" value="<%=coachId%>" class="invisible">
+                        <input type="checkbox" checked="checked" name="session" value="<%=session%>" class="invisible">
+                        <%for (var j=0; j<5; j++){%>
+                            <select name="<%='selectStudent'+j%>" id="" class="namesrow" <%if(state == "enterNames") {%><%} else {%>disabled<%}%>>
+                                <option value="">Choose a student</option
+                                <%students.forEach((student)=>{%>
+                                    ><option value="<%=student.iD%>" <%if(scoreCard[j] == student.iD) {%>selected="selected"<%}%>><%=student.fullName%></option
+                                <%}) %>
+                            ></select>
+                        <%}%>
+                        <div class="spacer rightjustify">Varsity&nbsp;&nbsp;</div>
+                        <%for (var j=5; j<10; j++){%>
+                            <select name="<%='selectStudent'+j%>" id="" class="namesrow" <%if(state == "enterNames") {%><%} else {%>disabled<%}%>>
+                                <option value="">Choose a student</option
+                                <%students.forEach((student)=>{%>
+                                    ><option value="<%=student.iD%>" <%if(scoreCard[j] == student.iD) {%>selected="selected"<%}%>><%=student.fullName%></option
+                                <%}) %>
+                            ></select>
+                        <%}%>
+                        <div class="spacer rightjustify">JV&nbsp;&nbsp;</div>
+                    </form>
+                </div>
+            </div>
+            <div id="scoreclicks" class="ib pushright">
+                <div class="qnumberrow">
+                    <div class="qnumber big spacer">1</div
+                    ><div class="qnumber big spacer">2</div
+                    ><div class="qnumber big spacer">3</div
+                    ><div class="qnumber big spacer">4</div
+                    ><div class="qnumber big spacer">5</div
+                    ><div class="qnumber big spacer">6</div
+                    ><div class="qnumber big spacer">7</div
+                    ><div class="qnumber big spacer">8</div
+                    ><div class="qnumber big spacer">9</div
+                    ><div class="qnumber big spacer">10</div
+                    ><div class="scoreboxheader big spacer">Scores</div
+                ></div
+                ><div name="" id="" class="scoressrow"
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div class="qnumberrow">
+                    <div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="scoreboxheader big spacer r">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div name="" id="" class="scoressrow">
+                    <div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="qbox qnumber" id="qbox00">0</div
+                    ><div class="scorebox" id="score0">0</div
+                ></div
+                ><div class="qnumberrow">
+                    <div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="qnumber big spacer">0</div
+                    ><div class="scoreboxheader big spacer">0</div
+                ></div>
+            </div>
+       </div> 
+    </div>
+    <div class="obuttonbar">
+        <button type="submit" form="selectnames" class="oleftbutton" name="requestType" value="submitNames" <%if(state == "enterNames"){%> <%} else {%>disabled<%}%>>Submit Name Entry</button>
+        <button class="orightbutton">Submit Score Entry</button>
+    </div>
+    <div id="footer">
+        <p>page footer with credits</p>
+    </div>
+</body>
+<%if (locals.namesLockedMsg) { %>
+    <script>
+        window.onload = function() {alert("Name entry is currently locked")};
+    </script>
+<%}%>
+<%if (locals.scoresLockedMsg) { %>
+    <script>
+        window.onload = function() {alert("Score entry is currently locked")};
+    </script>
+<%}%>
+</html>

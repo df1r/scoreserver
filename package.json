@@ -1,0 +1,17 @@
+{
+  "name": "scoring-app-v01",
+  "version": "1.0.0",
+  "description": "web app for CJML coaches to use to enter scores for their team",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Daniel Fishman",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2"
+  }
+}
