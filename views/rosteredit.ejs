@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Roster</title>
+    <link rel="stylesheet" href="/coach.css">
+</head>
+<body>
+    <!-- remove deleted students -->
+    <% 
+    let deleteIndices=[];
+    alphaStudents.forEach((student)=>{ 
+        if (student.last.startsWith("!")){
+            var idx = alphaStudents.findIndex((a)=>{return (a.iD == student.iD)});
+            deleteIndices.push(idx);
+        }
+    });
+    for(var j=deleteIndices.length-1; j>=0; j--){
+        alphaStudents.splice(deleteIndices[j],1);
+    }
+    %>
+    <h1>Edit the student names in the fields below, then click "Done".</h1>
+    <form action="/roster" method="POST" id="neverMindForm">
+        <input type="checkbox" checked="checked" class="invisible" name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible" name="session" value="<%=session%>" />
+    </form>
+    <!-- The form below has one of two endpoints, chosen based on whether the user
+     is coming from roster.ejs or coach.ejs. -->
+    <%if (returnToCoach) {%>
+        <form action="/coach" method="POST">
+        <%var requestType = "newStudents";%>
+    <%}else{%>
+        <form action="/roster" method="POST">
+        <%var requestType = "changeStudent"%>
+    <%}%>
+        <input type="checkbox" checked="checked" class="invisible" 
+            name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible" 
+            name="session" value="<%=session%>" />
+        <% var numChangedStuds = 0;%>
+        <% alphaStudents.forEach((stud)=>{%>
+            <p> 
+                <%if(needNames.includes(stud.iD)) {%>
+                    <%numChangedStuds++;%>
+                    <input type="checkbox" checked="checked" class="invisible"
+                        name="<%='studentId'+numChangedStuds%>" value="<%=stud.iD%>" />
+                    <input type="text" name="<%='first'+numChangedStuds%>" value="<%=stud.first%>" />
+                    <input type="text" name="<%='middle'+numChangedStuds%>" value="<%=stud.middle%>" />
+                    <input type="text" name="<%='last'+numChangedStuds%>" value="<%=stud.last%>" />
+                <%} else {%>
+                    <%=stud.fullName%>
+                <%}%>
+            </p>
+        <%});%>
+        <div class="horizontalchildren">
+            <input type="checkbox" checked="checked" class="invisible"
+                name="howManyStuds" value="<%=numChangedStuds%>" />
+            <button type="submit" name="requestType" value="<%=requestType%>">
+                Done
+            </button>
+            <%if(!(returnToCoach)) {%>
+                <button type="submit" form="neverMindForm"
+                    name="requestType" value="manageRoster">
+                    Cancel
+                </button>
+            <%}%>
+        </div>
+    </form>
+</body>
+</html>

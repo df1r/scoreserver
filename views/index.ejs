@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CJML login</title>
+    <link rel="stylesheet" href="/coach.css">
+</head>
+<body>
+        <form action="/", method = "POST">
+            <select name="coachId" required>
+                <option value="">Choose your School</option>
+                <% alphaSchools.forEach(record => { %>
+                    <option name="coachId" value="<%=record.coachId%>"><%=record.school%></option>
+                <%});%>
+                <option name="coachId" value="statistician">Statistician</option>
+            </select>
+            <label for="pwd">Password: </label>
+            <input type="text" id="pwd" name="passWord" required />
+            <button type="submit" name="requestType" value="readOnly">login</button>
+        </form>
+
+    <% if (arrivalMsg == "bumped") { %>
+        <script>alert(
+            "Sorry, your session has been terminated because a more-recent login has occurred elsewhere. You may log in again to continue working."
+            );</script>
+    <%}%>
+    <% if (arrivalMsg == "loggedout") { %>
+        <script>alert(
+            "Your session has ended."
+            );</script>
+    <%}%>
+    <% if (arrivalMsg == "wrongpwd") { %>
+        <script>alert(
+            "password error, please retry"
+            );</script>
+    <%}%>
+</body>
+</html>

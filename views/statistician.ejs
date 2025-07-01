@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistician Console</title>
+    <link rel="stylesheet" href="/statistician.css">
+</head>
+<body>
+
+    <div id="wholepage">
+        <div id="pagetitle">
+            <h1>CJML Statistician Console</h1>
+        </div>
+        <br />
+        <button type="submit" form="statform"
+            name="requestType" value="changePwd">
+            Change Password
+        </button>
+
+        <div id="sidebyside">
+            <div id="leftside" class="boxed">
+                <div id="contestinfo">
+                    <form action="/manageTeams" method="POST" id="manageTeamsForm">
+                        <input type="checkbox" class="invisible" checked="checked"
+                            name="session" value="<%=session%>" />
+                    </form>
+                    <form action="/statistician" method="POST" id="statform">
+                        <input type="checkbox" class="invisible" checked="checked" 
+                            name="session" value="<%=session%>" />
+                        <%if(state=="modifyVenue"){%>
+                            <div class="horizontalchildren">
+                                <p>
+                                    Contest <input type="text" maxlength="1" size="1" required
+                                        name="contestNumber" value="<%=status.contestNumber%>" />
+                                </p>
+                            </div>
+                            <p>
+                                <input type="text" required 
+                                    name="hostSchool" value="<%=status.hostSchool%>" />
+                            </p>
+                            <div class="horizontalchildren">
+                                <button type="submit" name="requestType" value="submitVenue">
+                                    Save Changes
+                                </button>
+                                <button type="submit" 
+                                    name="requestType" value="readOnly">
+                                    Cancel
+                                </button>
+                            </div>
+                        <%} else {%>
+                            <div class="horizontalchildren">
+                                <p>Contest <%=status.contestNumber%></p>
+                            </div>
+                            <p><%=status.hostSchool%></p>
+                            <button type="submit" name="requestType" value="modifyVenue">
+                                Modify
+                            </button>
+                        <%}%>
+                    </form>
+                </div>
+                <div id="fourbuttons">
+                    <div>
+                        <button type="submit" form="statform" 
+                            name="requestType" value="newContest"
+                            onclick="return confirm('Are you sure?')">
+                            New Contest
+                        </button>
+                    </div>
+                    <div>
+                        <button type="submit" form="manageTeamsForm" 
+                            name="requestType" value="manageTeams">
+                            Manage Teams
+                        </button>
+                    </div>
+                    <div>
+                        <button>Get Spreadsheet</button>
+                    </div>
+                    <div>
+                        <a href="/?arrivedFrom=loggedout"><button>Logout</button></a>
+                    </div>
+                    </div>
+
+            </div>
+            <div id="rightside">
+                <form action="/statistician" method="POST" id="rightsideform">
+                    <input type="checkbox" class="invisible" checked="checked"
+                        name="session" value="<%=session%>" />
+                    <div id="contestcontrols", class="horizontalchildren">
+                        <button type="submit" name="requestType" value="openNames">
+                            open names
+                        </button>
+                        <button type="submit" name="requestType" value="closeNames">
+                            lock names
+                        </button>
+                        <button type="submit" name="requestType" value="openScores">
+                            open scores
+                        </button>
+                        <button type="submit" name="requestType" value="closeScores">
+                            lock scores
+                        </button>
+                    </div>
+                    <div>
+                        <table class="fullwidth">
+                            <tbody>
+                                <%alphaSchools.forEach((alphaSchool)=>{%>
+                                    <tr>
+                                        <%var idx=coachList.findIndex((coach)=>{return(coach.iD == alphaSchool.coachId);});%>
+                                        <td><%=coachList[idx].school%><br /><%=coachList[idx].fullName%></td>
+                                        <td class="<%if(coachList[idx].permission.nameEntry){%>green <%}else{%>red <%}%>tdnarrow">
+                                            <label for="<%='names'+coachList[idx].iD%>">
+                                                Names<br />
+                                                <%if(coachList[idx].permission.nameEntry){%>Open<%}else{%>Locked<%}%>
+                                            </label><br />
+                                            <button type="submit" class="invisible" id="<%='names'+coachList[idx].iD%>" 
+                                                name="requestType" value="<%='namePermission'+alphaSchool.coachId%>">
+                                            </button>
+                                        </td>
+                                        <td class="<%if(coachList[idx].permission.scoreEntry){%>green <%}else{%>red <%}%>tdnarrow">
+                                            <label for="<%='scores'+coachList[idx].iD%>"
+                                                >Scores<br />
+                                                <%if(coachList[idx].permission.scoreEntry){%>Open<%}else{%>Locked<%}%>
+                                            </label><br />
+                                            <button type="submit" class="invisible" id="<%='scores'+coachList[idx].iD%>" 
+                                                name="requestType" value="<%='scorePermission'+alphaSchool.coachId%>">
+                                            </button>
+                                        </td>
+                                        <td class="tdnarrow"><img src="/images/check.png" alt="check" width="40%" 
+                                            <%if(!(coachList[idx].scoreCard.nameEntry)){%> class="invisible" <%}%>>
+                                        </td>
+                                        <td class="tdnarrow"><img src="/images/check.png" alt="check" width="40%" 
+                                            <%if(!(coachList[idx].scoreCard.scoreEntry)){%> class="invisible" <%}%>>
+                                        </td>
+                                    </tr>
+                                <%});%>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            <button type="submit" form="rightsideform" 
+                name="requestType" value="readOnly">
+                refresh table
+            </button>
+        </div>
+    </div>
+</body>
+</html>
