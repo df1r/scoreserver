@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/coach.css">
+    <title>Undelete</title>
+</head>
+<body>
+    <!-- remove non-deleted students -->
+    <% 
+    let unDeleteIndices=[];
+    alphaStudents.forEach((student)=>{ 
+        if (!(student.last.startsWith("!"))){
+            var idx = alphaStudents.findIndex((a)=>{return (a.iD == student.iD)});
+            unDeleteIndices.push(idx);
+        }
+    });
+    for(var j=unDeleteIndices.length-1; j>=0; j--){
+        alphaStudents.splice(unDeleteIndices[j],1);
+    }
+    %>
+    <h1>Click on each student to be undeleted, then click "Done".</h1>
+    <form action="/rosterundelete" method="post"> 
+        <input type="checkbox" checked="checked" class="invisible"
+            name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible"
+            name="session" value="<%=session%>" />
+        <%var j=0;%>
+        <%alphaStudents.forEach(dStudent=> {%>
+            <button type="submit" 
+                name="requestType" value="<%='unDeleteStudent'+dStudent.iD%>">
+                <%=dStudent.fullName%>
+            </button>
+            <br />
+        <%});%>
+    </form>
+    <form action="/roster" method="post">
+        <input type="checkbox" checked="checked" class="invisible"
+            name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible"
+            name="session" value="<%=session%>" />
+        <button type="submit" name="requestType" value="manageRoster">
+            Done
+        </button>
+    </form>
+</body>
+</html>
