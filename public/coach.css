@@ -4,7 +4,9 @@ body{
     text-align: center;
     font-family: Arial;
 }
-
+p{
+    margin:0;
+}
 h1{
     font-weight: 800
 }
@@ -55,14 +57,7 @@ h1{
 #scoresheet{
     width: 21.5cm;
     height: 14.9cm;
-    border: solid red;
-}
-
-.headerline{
-    width: 22.5cm;
-    margin: 0;
-    text-align: center;
-    min-height: 0.75cm
+    border: rgb(116, 64, 6);
 }
 
 .namedropdowns{
@@ -83,17 +78,20 @@ em{
 }
 .pushleft{
     /* display: inline-block; */
-    width: 5cm;
+    /* width: 5cm; */
     margin-right: 0cm;
     float:left;
     min-height:0.5cm;
 }
 .pushright{
     /* display: inline-block; */
-    width: 5cm;
+    /* width: 5cm; */
     margin-left: 0cm;
     float:right;
     min-height: 0.5cm;
+}
+.tbd{
+    width:2.57cm;
 }
 .wideheader{
     display: inline-block;
@@ -113,7 +111,7 @@ em{
     display: inline-block;
 }
 .r{
-    background-color: rgb(142, 0, 0);
+    background-color: rgb(116, 64, 6);
     color: antiquewhite;
 }
 .w75{
@@ -130,6 +128,12 @@ em{
 .rightjustify{
     text-align: right;
 }
+.headerline{
+    /* width: 22.5cm; */
+    margin: 0;
+    text-align: center;
+    min-height: 0.75cm
+}
 .scoreboxheader{
     display: inline-block;
     width:1.93cm;
@@ -137,9 +141,7 @@ em{
 .big{
     font-size: larger;
     font-weight: 700;
-}
-.spacer{
-    height: .7cm;
+    text-align: center;
 }
 #names{
     width: 8cm;
@@ -156,21 +158,26 @@ em{
 .number{
     height: .6cm;
     padding-top: .3cm;
+    text-align: center;
 }
 #dropdowns{
     width: 7cm;
     height: 11.1cm;
     /* border:solid 1px */
 }
-#scoreclicks{
+/* #scoreclicks{
     width: 13.4cm;
     height: 11cm;
     border: solid 1px;
     padding-bottom: 0.1cm;
-}
+} */
 .horizontalborders{
     border-right: solid 1px;
     border-left: solid 1px;
+}
+.horizontalchildren>* {
+    display: inline-block;
+    position: unset;
 }
 .namesrow{
     height:.9cm;
@@ -185,11 +192,9 @@ em{
     font-size: 16pt;
     text-align: center;
     border-top: solid 1px;
-    border-bottom: solid 1px;
-    background-color: rgb(246, 210, 66);
-}
-.invisible{
-    display: none;
+    /* border-bottom: solid 1px; */
+    border-bottom: hidden;
+    /* background-color: hsl(0, 91%, 61%); */
 }
 .qnumber{
     display: inline-block;
@@ -197,7 +202,7 @@ em{
     border-left: solid 1px;
     border-right: solid 1px;
 }
-.scorebox{
+.scoreboxv, .scoreboxjv{
     display: inline-block;
     background-color: white;
     width:1.88cm;
@@ -206,17 +211,55 @@ em{
 }
 .qbox{
     display: inline-block;
-    width: 1.1 cm;
+    width: 8.21%;
     height: 0.9cm;
     border-left: solid 1px;
     border-right: solid 1px;
+    font-size: 16pt;
+    /* background-color: #8bcf029e; */
+    text-align: center;
+    line-height:1 em;
+    padding: 0;
+    color: black;
+    font-family: arial;
+    box-sizing: content-box;
+    vertical-align: top;
 }
-.qnumberrow{
+.click{
+    background-color: #8bcf029e;
+    text-align: center;
+    line-height:1em;
+    padding: 0;
+    color: black;
+    font-family: arial;
+    box-sizing: content-box;
+    vertical-align: top;
+    /* width: 3cm;
+    height: 3cm; */
+    display: inline-block;
+    border: solid 1px;
+    border-bottom: hidden;
+}
+.click:disabled{
+    opacity: 50%;
+}
+.qboxrow{
     width: 13.4cm;
+    border-top: solid 5px;
+}
+.spacer{
+    height: .7cm;
+}
+#abovecolumns{
+    border-top: solid 1px;
 }
 #multipleerror{
     font-size: larger;
     background-color: red;
     color: white;
 }
+.invisible{
+    display: none;
+}
+
 

@@ -1,0 +1,61 @@
+body{
+    align-self: center;
+    text-align: center;
+    font-family: Arial;
+}
+
+.boxed,td{
+    border-style: solid;
+}
+
+#leftside{
+    width: 24%;
+    float:left;
+}
+
+#rightside{
+    width:74%;
+    min-width: 430px;
+    display: inline-block;
+}
+
+#sidebyside{
+    width: 100%;
+}
+
+.horizontalchildren>*{
+    display:inline-block;
+}
+
+.red{
+    background-color: #c05402;
+}
+
+.green{
+    background-color: #8bcf029e;
+}
+.tdnarrow{
+    width:10%;
+}
+
+.invisible{
+    display: none;
+}
+
+td>*{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    /* Why doesn't the above work? The table columns won't get narrower than their enclosed text. */
+}
+.fullwidth{
+    width:100%
+}
+
+.block {
+    display: block;
+}
+.eighty{
+    width: 80%;
+    justify-self: center;
+}
