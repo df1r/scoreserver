@@ -83,9 +83,11 @@
 middle, last names (functionality only, see step 9) DONE
 5. Make an administrator login with controls to open/close each entry for every or for specific coaches, 
 and to see who has entered data yet (functionality only, see step 9) DONE
+5.5 Clean up and document all code, and upload to github DONE
+6. Research providers of free virtual servers. Select and sign up for a service DONE
 
-5.5 Clean up and document all code, and upload to github
-6. Research providers of free virtual servers. Select and sign up for a service
+Note: To test the display problem on the iPad I have added a space on each of lines 166 and 182, the scoreboxv and scoreboxjv divs.
+
 7. Connect the server to a database and rewrite the database read and write routines
 8. Give the administrator the option of turning on the team-contest mode. Write the corresponding code in coach.ejs.
 9. Review the existing CSS and extend the CSS to the other three pages (login, 
@@ -159,9 +161,9 @@ admin, roster management), making a common color and font and button scheme and 
                                     <%for (var j=0; j<10; j++){%>
                                         <%var buttonName="scoreArray"+k+j%>
                                         ><input type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" value="<%=coachScoreCardScores[k][j]%>" class="invisible"
-                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] != "empty")) {%><%} else {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
+                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] == "empty")) {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
                                     <%}%>
-                                    ><div class="scoreboxv" id="<%='hScore'+k%>"><p>0</p></div
+                                    > <div class="scoreboxv" id="<%='hScore'+k%>"><p>0</p></div
                                 ></div
                             <%}%>
                             ><div class="qboxrow"
@@ -175,9 +177,9 @@ admin, roster management), making a common color and font and button scheme and 
                                     <%for (var j=0; j<10; j++){%>
                                         <%var buttonName="scoreArray"+k+j%>
                                         ><input type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" value="<%=coachScoreCardScores[k][j]%>" class="invisible"
-                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] != "empty")) {%><%} else {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
+                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] == "empty")) {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
                                     <%}%>
-                                    ><div class="scoreboxjv" id="<%='hScore'+k%>"><p>0</p></div
+                                    > <div class="scoreboxjv" id="<%='hScore'+k%>"><p>0</p></div
                                 ></div
                             <%}%>
                         ></form
