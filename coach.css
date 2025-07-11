@@ -1,0 +1,265 @@
+body{
+    width: 95%;
+    align-self: center;
+    text-align: center;
+    font-family: Arial;
+}
+p{
+    margin:0;
+}
+h1{
+    font-weight: 800
+}
+
+#oheader{
+    width: 90%;
+    max-width: 25cm;
+    margin: auto;
+    background-color: antiquewhite;
+}
+
+#oheader>*{
+    display: inline-block;
+}
+
+#otitle{
+    max-width: 90%;
+    margin: auto;
+}
+
+.obuttonbar{
+    position: relative;
+    width: 95%;
+    max-width: 21.5cm;
+    min-height: 20px;
+    margin: auto;
+}
+
+.oleftbutton{
+    position: absolute;
+    left: 5%;
+}
+
+.orightbutton{
+    position: absolute;
+    left: 50%
+}
+
+#viewwindow{
+    margin: auto;
+    width: 95%;
+    max-width: 22.5cm;
+    height: 15.7 cm;
+    overflow: auto;
+    border: solid black;
+}
+
+#scoresheet{
+    width: 21.5cm;
+    height: 14.9cm;
+    border: rgb(116, 64, 6);
+}
+
+.namedropdowns{
+    display: inline-block;
+    width: 8.45cm;
+    margin: 0;
+    border: solid black 1px;
+    height: 100%;
+}
+
+.scoreclicks{
+    display: inline-block;
+    margin: 0;
+    border: solid black 1px;
+}
+em{
+    font-size: x-large;
+}
+.pushleft{
+    /* display: inline-block; */
+    /* width: 5cm; */
+    margin-right: 0cm;
+    float:left;
+    min-height:0.5cm;
+}
+.pushright{
+    /* display: inline-block; */
+    /* width: 5cm; */
+    margin-left: 0cm;
+    float:right;
+    min-height: 0.5cm;
+}
+.tbd{
+    width:2.57cm;
+}
+.wideheader{
+    display: inline-block;
+    width: 7.5cm;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.narrowheader{
+    display: inline-block;
+    width: 3.2cm;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#scoresheettitle{
+    display: inline-block;
+}
+.r{
+    background-color: rgb(116, 64, 6);
+    color: antiquewhite;
+}
+.w75{
+    width: 7.5cm;
+    /* border: solid 1px; */
+}
+.w32{
+    width: 3.2cm;
+    /* border: solid 1px; */
+}
+.leftjustify>*{
+    text-align: left;
+}
+.rightjustify{
+    text-align: right;
+}
+.headerline{
+    /* width: 22.5cm; */
+    margin: 0;
+    text-align: center;
+    min-height: 0.75cm
+}
+.scoreboxheader{
+    display: inline-block;
+    width:1.93cm;
+}
+.big{
+    font-size: larger;
+    font-weight: 700;
+    text-align: center;
+}
+#names{
+    width: 8cm;
+    height: 11.1cm;
+    border:solid 1px
+}
+#numbering{
+    width: .9cm;
+    height: 11cm;
+    border:solid 1px;
+    padding-bottom: 0.1cm;
+
+}
+.number{
+    height: .6cm;
+    padding-top: .3cm;
+    text-align: center;
+}
+#dropdowns{
+    width: 7cm;
+    height: 11.1cm;
+    /* border:solid 1px */
+}
+/* #scoreclicks{
+    width: 13.4cm;
+    height: 11cm;
+    border: solid 1px;
+    padding-bottom: 0.1cm;
+} */
+.horizontalborders{
+    border-right: solid 1px;
+    border-left: solid 1px;
+}
+.horizontalchildren>* {
+    display: inline-block;
+    position: unset;
+}
+.namesrow{
+    height:.9cm;
+    width: 100%;
+    font-size: 16pt;
+    text-align: center;
+    background-color: bisque;
+}
+.scoressrow{
+    height:.85cm;
+    width: 100%;
+    font-size: 16pt;
+    text-align: center;
+    border-top: solid 1px;
+    /* border-bottom: solid 1px; */
+    border-bottom: hidden;
+    /* background-color: hsl(0, 91%, 61%); */
+}
+.qnumber{
+    display: inline-block;
+    width: 1.1cm;
+    border-left: solid 1px;
+    border-right: solid 1px;
+}
+.scoreboxv, .scoreboxjv{
+    display: inline-block;
+    background-color: white;
+    width:1.725cm;
+    height: 0.82cm;
+    border: solid 1px;
+}
+.qbox{
+    display: inline-block;
+    width: 8.21%;
+    height: 0.9cm;
+    border-left: solid 1px;
+    border-right: solid 1px;
+    font-size: 16pt;
+    /* background-color: #8bcf029e; */
+    text-align: center;
+    line-height:1 em;
+    padding: 0;
+    color: black;
+    font-family: arial;
+    box-sizing: content-box;
+    vertical-align: top;
+}
+.click{
+    background-color: #8bcf029e;
+    text-align: center;
+    line-height:1em;
+    padding: 0;
+    color: black;
+    font-family: arial;
+    box-sizing: content-box;
+    vertical-align: top;
+    /* width: 3cm;
+    height: 3cm; */
+    display: inline-block;
+    border: solid 1px;
+    border-bottom: hidden;
+}
+.click:disabled{
+    opacity: 50%;
+}
+.qboxrow{
+    width: 13.4cm;
+    border-top: solid 5px;
+}
+.spacer{
+    height: .7cm;
+}
+#abovecolumns{
+    border-top: solid 1px;
+}
+#multipleerror{
+    font-size: larger;
+    background-color: red;
+    color: white;
+}
+.invisible{
+    display: none;
+}
+
+
