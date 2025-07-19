@@ -456,7 +456,7 @@ app.post("/", (req, res) => {
             coach.session = Math.random();
             dBaseWrite("session", coach.session, coach.iD);
             addFullName(coach);
-            console.log(`${coach.iD}: ${coach.fullName} has logged in.`);
+            console.log(`Coach ${coach.iD}: ${coach.fullName} has logged in.`);
             var alphaStudents = makeAlphaStudentsList(coach);
             res.render("coach.ejs",
                 {
@@ -471,6 +471,10 @@ app.post("/", (req, res) => {
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
+                    editTeam: false,
+                    coachFirst: "",
+                    coachMiddle: "",
+                    coachLast: "",
                 });
         } else {
             res.redirect("/?arrivedFrom=wrongpwd");
@@ -596,6 +600,20 @@ app.post("/statistician", (req, res) => {
                     dBaseWrite("statistician", statistician);
                     break;
                 }
+            case "cleanDeleted":
+                coachList.forEach((coach) => { 
+                    let deleteIndices=[];
+                    coach.students.forEach((student) => { 
+                        if(student.last.startsWith("!")){
+                            var idx = coach.students.findIndex((a)=>{return (a.iD == student.iD)});
+                            deleteIndices.push(idx);
+                        }
+                    });
+                    for(var j=deleteIndices.length-1; j>=0; j--){
+                        coach.students.splice(deleteIndices[j],1);
+                    }
+                    dBaseWrite("coach", coach);
+                });
             default:
                 console.log("statistician.ejs returned an unrecognized requestType of ", req.body.requestType);
         }
@@ -783,6 +801,7 @@ app.post("/coach", (req, res)=>{
     var namesLockedMsg = false; // Tells whether to display the warning that names are locked.
     var scoresLockedMsg = false; // Tells whether to display the warning that scores are locked.
     var coachScoreCardStudentPlacement = coach.scoreCard.studentPlacement;
+    var editTeam = false; //Tells whether to put the team name and coach name in editable text fields.
     addFullName(coach);
     console.log(`${coach.iD}: Request ${req.body.requestType}`);
     if (coach.session == req.body.session) {
@@ -904,8 +923,7 @@ app.post("/coach", (req, res)=>{
                 }
                 break;
             case "newStudents": // Come here when the rosteredit page handles "Add Student" selections on the scorecard.
-                //There is a problem with the variable "howManyStuds". It has too many different names and it is passed too many times to track it easily.
-                for (var j = 1; j <= req.body.howManyStuds; j++) {
+                for (var j = 1; j <= req.body.numAddedStuds; j++) { //This is the final use of numAddedStuds. It remains reset to zero after this line.
                     var idx = coach.students.findIndex((student) => {
                         return (student.iD == req.body["studentId" + j]);
                     });
@@ -947,7 +965,17 @@ app.post("/coach", (req, res)=>{
                     dBaseWrite("coach", coach);
                     break;
                 }
-
+            case "editTeam":
+                editTeam = true;
+                break;
+            case "submitTeam":
+                coach.first = req.body.coachFirst;
+                coach.middle = req.body.coachMiddle;
+                coach.last = req.body.coachLast;
+                coach.school = req.body.coachSchool;
+                dBaseWrite("coach", coach);
+                addFullName(coach);
+                break;
             default:
                 console.log('post("/coach"...): Unrecognized requestType of ', req.body.requestType);
         }
@@ -968,7 +996,11 @@ app.post("/coach", (req, res)=>{
             scoresLockedMsg : scoresLockedMsg,
             currentStatusHostSchool : currentStatus.hostSchool,
             currentStatusContestDate : currentStatus.contestDate,
-            currentStatusContestNumber : currentStatus.contestNumber,
+            currentStatusContestNumber: currentStatus.contestNumber,
+            editTeam: editTeam,
+            coachFirst: coach.first,
+            coachMiddle: coach.middle,
+            coachLast: coach.last,
         });
     } else { // Come here if the session number is wrong
         console.log(`${coach.iD}: session was terminated by server`)
@@ -1059,6 +1091,10 @@ app.post("/rosteredit", (req, res) => {
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
+                    editTeam: false,
+                    coachFirst: "",
+                    coachMiddle: "",
+                    coachLast: "",
                 });
                 return;
         }

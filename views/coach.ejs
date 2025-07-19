@@ -1,4 +1,25 @@
 <!DOCTYPE html>
+<!-- Next: Put in another line so that the JV and Varsity team scores are computed DONE -->
+<!-- Remaining Steps:
+1. Finish the css code to lay out the coach entry page completely, move down the Varsity and JV labels DONE
+2. Turn the html code into ejs code, making the dropdowns functional DONE
+3. Add functionality to the score boxes and the buttons DONE
+4. Add a way for coaches to manage their team roster. Change data structure to separate first, 
+middle, last names (functionality only, see step 9) DONE
+5. Make an administrator login with controls to open/close each entry for every or for specific coaches, 
+and to see who has entered data yet (functionality only, see step 9) DONE
+5.5 Clean up and document all code, and upload to github DONE
+6. Research providers of free virtual servers. Select and sign up for a service DONE
+12. Make Administrator function to clear out a contest and set up the next contest
+
+7. Connect the server to a database and rewrite the database read and write routines
+8. Give the administrator the option of turning on the team-contest mode. Write the corresponding code in coach.ejs.
+9. Review the existing CSS and extend the CSS to the other three pages (login, 
+admin, roster management), making a common color and font and button scheme and using the same header and footer.
+10. Require password authentication on every http request and research good security practices
+11. Find a way to send the server data to a Google Sheet (Google API?)
+13. Deliver a score sheet to the coach--What file format will it be? Mary Kay's idea about giving raw data to play with -->
+
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -12,10 +33,6 @@
             <a href="/?arrivedFrom=loggedout"><button>logout</button></a>
         </div>
         <br />
-        <button type="submit" form="mainForm"
-            name="requestType" value="changePwd">
-            Change Password
-        </button>
 
 <!-- remove deleted students -->
         <% 
@@ -34,23 +51,92 @@
         <div id="otitle">
             <h1>Central Jersey Math League</h1>
         </div>
+        <div class="coachbox obuttonbar">
+            <%if(editTeam){%>
+                <p>
+                    Coach:&nbsp;
+                    <input type="text" placeholder="Enter coach first name" form="editTeam" name="coachFirst"
+                        value="<%=coachFirst%>" required/>
+                    <input type="text" placeholder="Enter coach middle name" form="editTeam" name="coachMiddle"
+                        value="<%=coachMiddle%>" />
+                    <input type="text" placeholder="Enter coach last name" form="editTeam" name="coachLast"
+                        value="<%=coachLast%>" required />
+                </p>
+                <p>
+                    School:&nbsp;
+                    <input type="text" placeholder="Enter school name" form="editTeam" name="coachSchool" 
+                        value="<%=coachSchool%>" required />
+                    <button type="submit" form="editTeam" name="requestType" value="submitTeam">
+                        Save Changes
+                    </button>
+                    <button type="submit" form="mainForm" name="requestType" value="readOnly">
+                        Cancel
+                    </button>
+                </p>
+            <%}else{%>
+                <p>Coach: <%=coachFullName%></p>
+                <p>
+                    School: <%=coachSchool%>
+                    <button type="submit" form="mainForm" 
+                        name="requestType" value="editTeam">
+                        Edit
+                    </button>
+                    <button type="submit" form="mainForm"
+                        name="requestType" value="changePwd">
+                        Change Password
+                    </button>
+
+                </p>
+            <%}%>
+        </div>
+        <br />
+        <form action="/coach" method="POST" id="mainForm">
+            <input type="checkbox" checked="checked" class="invisible"
+                name="coachId" value="<%=coachId%>" />
+            <input type="checkbox" checked="checked" class="invisible"
+                name="session" value="<%=session%>" />
+        </form>
+        <form action="/coach" method="POST" id="namesForm">
+            <input type="checkbox" checked="checked" class="invisible"
+                name="coachId" value="<%=coachId%>" />
+            <input type="checkbox" checked="checked" class="invisible"
+                name="session" value="<%=session%>" />
+            <%if(state=="enterNames"){%>
+                <input type="checkbox" checked="checked" class="invisible"
+                    name="numAddedStuds" value="<%=numAddedStuds%>" />
+            <%}%>
+        </form>
+        <form action="/coach" method="POST" id="scoresForm">
+            <input type="checkbox" checked="checked" class="invisible"
+                name="coachId" value="<%=coachId%>" />
+            <input type="checkbox" checked="checked" class="invisible"
+                name="session" value="<%=session%>" />
+        </form>
+        <form action="/coach" method="POST" id="editTeam">
+            <input type="checkbox" checked="checked" class="invisible"
+                name="coachId" value="<%=coachId%>" />
+            <input type="checkbox" checked="checked" class="invisible"
+                name="session" value="<%=session%>" />
+        </form>
         <div class="obuttonbar">
-            <form action="/coach" method="POST" id="mainForm">
-                <input type="checkbox" checked="checked" class="invisible"
-                    name="coachId" value="<%=coachId%>" />
-                <input type="checkbox" checked="checked" class="invisible"
-                    name="session" value="<%=session%>" />
-                <button type="submit" class="oleftbutton"
-                    name="requestType" value="enterNames"  
-                    <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
-                    Enter Names
-                </button>
-                <button type="submit" class="orightbutton"
-                    name="requestType" value="enterScores"  
-                    <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
-                    Enter Scores
-                </button>
-            </form>
+            <button form="mainForm" type="submit" class="oleftbutton"
+                name="requestType" value="enterNames"  
+                <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
+                Enter Names
+            </button>
+            <button form="mainForm" type="submit" class="oleftbutton2"
+                name="requestType" value="enterScores"  
+                <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
+                Enter Scores
+            </button>
+            <button form="mainForm" type="submit" class="orightbutton2"
+                <%if(state=="readOnly" ){%><%} else {%> disabled<%}%> 
+                name="requestType" value="manageRoster">
+                Manage Roster
+            </button>
+            <br />
+            <br />
+
         </div>
 
 
@@ -60,137 +146,120 @@
         <div id="viewwindow">
             <div id="scoresheet">
                 <div class="headerline">
-                    <button type="submit" form="mainForm" <%if(state=="readOnly" ){%><%} else {%> disabled<%}%> 
-                        name="requestType" value="manageRoster">
-                        Manage Roster
-                    </button>
-                    <div class="pushright tbd"><p>Place: <em class="r" id="teamrank">TBD</em></p></div>
                     <h2 id="scoresheettitle">Central Jersey Math League</h2>
+                    <div class="tbd">
+                        <p>Place: <em class="r" id="teamrank">TBD</em></p>
+                    </div>
                 </div>
-                <div class="headerline"><%=coachSchool%> Score Sheet</div>
+                <div class="headerline"><h2><%=coachSchool%> Score Sheet</h2></div>
                 <div class="headerline leftjustify">
-                    <div class="wideheader">Coach:<br><span class="big spacer" max-length="26"><%=coachFullName%></span></div
-                    ><div class="wideheader">Venue:<br><span class="big spacer" ><%=currentStatusHostSchool%></span></div
-                    ><div class="narrowheader">Date:<br><span class="big spacer"><%=currentStatusContestDate%></span></div
-                    ><div class="narrowheader">&emsp;Contest No:<br>&emsp;&emsp;&emsp;&emsp; <span class="big spacer"><%=currentStatusContestNumber%></span></div>
+                    <div class="wideheader">Coach:<br><span class="big spacer" max-length="26"><%=coachFullName%></span></div>
+                    <div class="wideheader">Venue:<br><span class="big spacer" ><%=currentStatusHostSchool%></span></div>
+                    <div class="narrowheader">Date:<br><span class="big spacer"><%=currentStatusContestDate%></span></div>
+                    <div class="narrowheader">&emsp;Contest No:<br>&emsp;&emsp;&emsp;&emsp; <span class="big spacer"><%=currentStatusContestNumber%></span></div>
                 </div>
-<!-- Next: Put in another line so that the JV and Varsity team scores are computed DONE -->
-<!-- Remaining Steps:
-1. Finish the css code to lay out the coach entry page completely, move down the Varsity and JV labels DONE
-2. Turn the html code into ejs code, making the dropdowns functional DONE
-3. Add functionality to the score boxes and the buttons DONE
-4. Add a way for coaches to manage their team roster. Change data structure to separate first, 
-middle, last names (functionality only, see step 9) DONE
-5. Make an administrator login with controls to open/close each entry for every or for specific coaches, 
-and to see who has entered data yet (functionality only, see step 9) DONE
-5.5 Clean up and document all code, and upload to github DONE
-6. Research providers of free virtual servers. Select and sign up for a service DONE
-
-Note: To test the display problem on the iPad I have added a space on each of lines 166 and 182, the scoreboxv and scoreboxjv divs.
-
-7. Connect the server to a database and rewrite the database read and write routines
-8. Give the administrator the option of turning on the team-contest mode. Write the corresponding code in coach.ejs.
-9. Review the existing CSS and extend the CSS to the other three pages (login, 
-admin, roster management), making a common color and font and button scheme and using the same header and footer.
-10. Require password authentication on every http request and research good security practices
-11. Find a way to send the server data to a Google Sheet (Google API?)
-12. Make Administrator function to clear out a contest and set up the next contest
-13. Deliver a score sheet to the coach--What file format will it be? Mary Kay's idea about giving raw data to play with -->
-                <div id="names", class="pushleft">
-                    <div id="numbering", class="pushleft">
-                        <div class="big spacer"></div>
-                        <% for (var j=1; j<6; j++){%>
-                            <div class="number"><%=j%></div>
-                        <%}%>
-                        <div class="big spacer"></div>
-                        <% for (var j=6; j<11; j++){%>
-                            <div class="number"><%=j%></div>
-                        <%}%>
-                        <div class="big spacer"></div>
-                    </div>
-                    <div id="dropdowns", class="pushright">
-                        <div class="spacer">Varsity team: players 1 through 5</div>
-                        <form action="/coach" method="POST" id="namesForm">
-                            <input type="checkbox" checked="checked" class="invisible"
-                                name="coachId" value="<%=coachId%>" />
-                            <input type="checkbox" checked="checked" class="invisible"
-                                name="session" value="<%=session%>" />
-                            <%if(state=="enterNames"){%>
-                                <input type="checkbox" checked="checked" class="invisible"
-                                    name="numAddedStuds" value="<%=numAddedStuds%>" />
-                            <%}%>
-                            <%for (var j=0; j<5; j++){%>
-                                <select name="<%='selectStudent'+j%>" class="namesrow" <%if(state == "enterNames") {%><%} else {%>disabled<%}%>>
-                                    <option value="empty">Choose a student</option
-                                    <%alphaStudents.forEach((student)=>{%>
-                                        ><option value="<%=student.iD%>" 
-                                            <%if(coachScoreCardStudentPlacement[j] == student.iD) {%>selected="selected"<%}%>
-                                            ><%=student.fullName%></option
-                                    <%}) %>
-                                ><option value="addStudent">Add a Student</option></select>
-                            <%}%>
-                            <div class="spacer rightjustify">Varsity&nbsp;&nbsp;</div>
-                            <%for (var j=5; j<10; j++){%>
-                                <select name="<%='selectStudent'+j%>" class="namesrow" <%if(state == "enterNames") {%><%} else {%>disabled<%}%>>
-                                    <option value="empty">Choose a student</option
-                                    <%alphaStudents.forEach((student)=>{%>
-                                        ><option value="<%=student.iD%>" 
-                                            <%if(coachScoreCardStudentPlacement[j] == student.iD) {%>selected="selected"<%}%>
-                                            ><%=student.fullName%></option
-                                    <%}) %>
-                                ><option value="addStudent">Add a Student</option></select>
-                            <%}%>
-                            <div class="spacer rightjustify">JV&nbsp;&nbsp;</div>
-                        </form>
-                    </div>
-                </div>
-                <div id="scoreclicks" class="pushright">
-                    <div class="qboxrow" id="abovecolumns"
-                        <% for (var j=1; j<11; j++) { %>
-                            ><div class="qbox big spacer"><p><%= j %></p></div
-                        <%}%>
-                        ><div class="scoreboxheader big spacer">Scores</div
-                    ></div
-                        ><form action="/coach" method="POST" id="scoresForm"
-                                ><input type="checkbox" checked="checked" class="invisible"
-                                name="coachId" value="<%=coachId%>" 
-                                /><input type="checkbox" checked="checked" class="invisible"
-                                name="session" value="<%=session%>" 
-                            <% for (var k=0; k<5; k++) { %>
-                                /><div name="" id="" class="scoressrow"
-                                    <%for (var j=0; j<10; j++){%>
-                                        <%var buttonName="scoreArray"+k+j%>
-                                        ><input type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" value="<%=coachScoreCardScores[k][j]%>" class="invisible"
-                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] == "empty")) {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
-                                    <%}%>
-                                    > <div class="scoreboxv" id="<%='hScore'+k%>"><p>0</p></div
-                                ></div
-                            <%}%>
-                            ><div class="qboxrow"
-                                <%for (var j=0; j<10; j++){%>
-                                    ><div class="qbox spacer" id="<%='v'+j%>"><p>0</p></div
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col" class="seatNumberColumn"></th>
+                            <th scope="col" class="namesColumn unbold">Varsity team: players 1 through 5</th>
+                            <th scope="col">1</th>
+                            <th scope="col">2</th>
+                            <th scope="col">3</th>
+                            <th scope="col">4</th>
+                            <th scope="col">5</th>
+                            <th scope="col">6</th>
+                            <th scope="col">7</th>
+                            <th scope="col">8</th>
+                            <th scope="col">9</th>
+                            <th scope="col">10</th>
+                            <th scope="col">Scores</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <%for(var k=0; k<5; k++){%>
+                            <tr>
+                                <th scope="row"><%=k+1%></th>
+                                <td>
+                                    <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" <%if(state != "enterNames" ) {%>disabled<%}%>>
+                                        <option value="empty">Choose a student</option> 
+                                        <%alphaStudents.forEach((student)=>{%>
+                                            <option value="<%=student.iD%>" 
+                                                <%if(coachScoreCardStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
+                                                    <%=student.fullName%>
+                                            </option> 
+                                        <%}) %>
+                                        <option value="addStudent">Add a Student</option>
+                                    </select>
+                                </td>
+                                <%for(var j=0; j<10; j++){%>
+                                    <td>
+                                        <%var buttonName="scoreArray" +k+j%>
+                                        <input form="scoresForm" type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>"
+                                            value="<%=coachScoreCardScores[k][j]%>" class="invisible">
+                                        <button type="button" class="qbox click <%='clickrow' + k%>"
+                                            <%if((state!="enterScores" ) || (coachScoreCardStudentPlacement[k]=="empty" )) {%>disabled<%}%>>
+                                            <%=coachScoreCardScores[k][j]%>
+                                        </button>
+                                    </td>
                                 <%}%>
-                                ><div class="scoreboxheader big spacer r" id="vscore"><p>0</p></div
-                            ></div
-                            <% for (var k=5; k<10; k++) { %>
-                                ><div name="" id="" class="scoressrow"
-                                    <%for (var j=0; j<10; j++){%>
-                                        <%var buttonName="scoreArray"+k+j%>
-                                        ><input type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" value="<%=coachScoreCardScores[k][j]%>" class="invisible"
-                                        ><button type="button" class="qbox click <%='clickrow' + k%>" <%if((state == "enterScores") && (coachScoreCardStudentPlacement[k] == "empty")) {%>disabled<%}%>><p><%=coachScoreCardScores[k][j]%></p></button
-                                    <%}%>
-                                    > <div class="scoreboxjv" id="<%='hScore'+k%>"><p>0</p></div
-                                ></div
-                            <%}%>
-                        ></form
-                    ><div class="qboxrow"
-                        <%for (var j=0; j<10; j++){%>
-                            ><div class="qbox spacer" id="<%='jv'+j%>"><p>0</p></div
+                                <td class="scoreboxv" id="<%='hScore'+k%>"><p>0</p></td>
+                            </tr>
                         <%}%>
-                        ><div class="scoreboxheader big spacer" id="jvscore"><p>0</p></div
-                    ></div
-                ></div>
-            </div> 
+                        <tr class="qboxrow">
+                            <td></td>
+                            <td class="spacer rightjustify">Varsity&nbsp;&nbsp;</td>
+                            <%for(var j=0; j<10; j++){%>
+                                <td class="spacer" id="<%='v'+j%>">
+                                    0
+                                </td>
+                            <%}%>
+                            <td class="big spacer r" id="vscore"><p>0</p></td>
+                        </tr>
+                        <%for(var k=5; k<10; k++){%>
+                            <tr>
+                                <th scope="row">
+                                    <%=k+1%>
+                                </th>
+                                <td>
+                                    <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" <%if(state !="enterNames" ){%>disabled<%}%>>
+                                        <option value="empty">Choose a student</option>
+                                        <%alphaStudents.forEach((student)=>{%>
+                                            <option value="<%=student.iD%>" 
+                                                <%if(coachScoreCardStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
+                                                    <%=student.fullName%>
+                                            </option>
+                                        <%}) %>
+                                        <option value="addStudent">Add a Student</option>
+                                    </select>
+                                </td>
+                                <%for(var j=0; j<10; j++){%>
+                                    <td>
+                                        <%var buttonName="scoreArray" +k+j%>
+                                        <input form="scoresForm" type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" 
+                                            value="<%=coachScoreCardScores[k][j]%>" class="invisible">
+                                        <button type="button" class="qbox click <%='clickrow' + k%>"
+                                            <%if((state!="enterScores" ) || (coachScoreCardStudentPlacement[k]=="empty" )) {%>disabled<%}%>>
+                                            <p><%=coachScoreCardScores[k][j]%></p>
+                                        </button>
+                                    </td>
+                                <%}%>
+                                <td class="scoreboxjv" id="<%='hScore'+k%>"><p>0</p></td>
+                            </tr>
+                        <%}%>
+                        <tr  class="qboxrow">
+                            <td></td>
+                            <td class="spacer rightjustify">JV&nbsp;&nbsp;</td>
+                            <%for(var j=0; j<10; j++){%>
+                                <td class="spacer" id="<%='jv'+j%>">
+                                    0
+                                </td>
+                            <%}%>
+                            <td class="big spacer" id="jvscore"><p>0</p></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="obuttonbar">
             <div class="horizontalchildren oleftbutton">

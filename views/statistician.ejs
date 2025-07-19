@@ -32,7 +32,9 @@
                             <div class="horizontalchildren">
                                 <p>
                                     Contest <input type="text" maxlength="1" size="1" required
-                                        name="contestNumber" value="<%=status.contestNumber%>" />
+                                        name="contestNumber" value="<%=status.contestNumber%>" />&nbsp;
+                                        <input type="date" required
+                                        name="contestDate" value="<%=status.contestDate%>" />
                                 </p>
                             </div>
                             <p>
@@ -50,7 +52,7 @@
                             </div>
                         <%} else {%>
                             <div class="horizontalchildren">
-                                <p>Contest <%=status.contestNumber%></p>
+                                <p>Contest <%=status.contestNumber%>,&nbsp;<%=status.contestDate%></p>
                             </div>
                             <p><%=status.hostSchool%></p>
                             <button type="submit" name="requestType" value="modifyVenue">
