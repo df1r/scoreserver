@@ -16,15 +16,15 @@
             name="session" value="<%=session%>">
         <br />
         <label for="oldpassword"> Enter old password: </label>
-        <input type="text" id="oldPassword" required 
+        <input type="password" id="oldPassword" required autocomplete="off" autofocus 
             name="oldPassWord" placeholder="oldpassword" />
         <br />
-        <label for="oldpassword"> Enter new password: </label>
-        <input type="text" id="firstEntry" required 
+        <label for="firstEntry"> Enter new password: </label>
+        <input type="password" id="firstEntry" required autocomplete="off"
             name="firstEntry" placeholder="newpassword" />
         <br />
-        <label for="oldpassword"> Confirm new password: </label>
-        <input type="text" id="secondEntry" required 
+        <label for="secondEntry"> Confirm new password: </label>
+        <input type="password" id="secondEntry" required autocomplete="off"
             name="secondEntry" placeholder="newpassword" />
         <button type="submit" 
             name="requestType" value="updatePwd">
@@ -34,7 +34,7 @@
     </form>
     <br />
     <br />
-    <form action="<%=returnPath%>" method="POST" id="changePasswordForm">
+    <form action="<%=returnPath%>" method="POST">
         <input type="checkbox" class="invisible" checked="checked"
             name="coachId" value="<%=coachId%>">
         <input type="checkbox" class="invisible" checked="checked"

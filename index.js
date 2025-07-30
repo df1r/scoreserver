@@ -4,9 +4,20 @@
 
 import express from "express";
 import bodyParser from "body-parser"; //not sure this is necessary.
+// import pg from "pg";
 
 const app = express();
 const port = 3000;
+
+// const db = new pg.Client({
+//     user: "postgres",
+//     host: "localhost",
+//     database: "scoreserver",
+//     password: "Dba.1190721",
+//     port: 5433,
+// });
+
+// db.connect();
 
 
 app.use(express.static("public"));
@@ -47,12 +58,15 @@ function DbCoachRecord(iD, first, middle, last, school) {// This is a constructo
 
 
 // Below are the data that will come from the database in a later version
+// const date = new Date(Date.UTC(2025, 11, 26));
 
 var dbStatus = {
     maximumCoachId : 2,
-    contestNumber : 4,
-    hostSchool : "Eric R. Blitzkrieg Canning Academy",
-    contestDate : new Date("12/25/24").toLocaleDateString(),
+    contestNumber: 4,
+    teamContest: false,
+    hostSchool: "Eric R. Blitzkrieg Canning Academy",
+    contestDate: "Dec 25, 2025",
+    // contestDate: new Date(Date.UTC(2025, 11, 26)).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }),
 }
 var dbCoaches = [
     new DbCoachRecord(1, "Vera","","Vacation","UC Tech"),
@@ -211,6 +225,8 @@ var dbStatistician = {
 // dBaseRead("status"); 
 // dBaseRead("statistician");
 function dBaseRead(reqType, coachId) { 
+
+
     switch (reqType) {
         case "coach":
             if (coachId) {
@@ -231,21 +247,79 @@ function dBaseRead(reqType, coachId) {
             console.log(`dBaseRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
             return false;
     }
+
+
+
+
+    // var returnedObject = false;
+    // switch (reqType) {
+    //     case "coach":
+    //         if (coachId) {
+    //             var dbCoaches = [];
+    //             db.query('SELECT * FROM "coaches" ;', (err, res) => {
+    //                 if (err) {
+    //                     console.error("Error executing query: dBaseRead, case=coach, coachId=true: ", err.stack);
+    //                 } else {
+    //                     dbCoaches = res.rows;
+    //                     var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
+    //                     returnedObject = JSON.parse(dbCoaches[idx].encCoach);
+    //                 }
+    //             });
+    //         } else {
+    //             console.log("dBaseRead: coach ID was expected as second argument");
+    //         }
+    //         break;
+    //     case "status":
+    //         try {
+    //             const statusTable = await db.query('SELECT * FROM "status" ;');
+    //             returnedObject = {
+    //                 maximumCoachId: statusTable.rows[0].maximumcoachid,
+    //                 contestNumber: statusTable.rows[0].contestnumber,
+    //                 hostSchool: statusTable.rows[0].hostschool,
+    //                 contestDate: statusTable.rows[0].contestdate,
+    //             }
+    //             console.log("maximumCoachId= ", returnedObject.maximumCoachId);
+    //         } catch (err) {
+    //             console.log("dBaseRead case=status", err);
+    //         }
+    //         break;
+    //     case "statistician":
+    //         db.query('SELECT * FROM "statistician" ;', (err, res) => {
+    //             if (err) {
+    //                 console.error("Error executing query: dBaseRead, case=statistician", err.stack);
+    //             } else {
+    //                 returnedObject = {
+    //                     passWord: res.rows[0].password,
+    //                     session: res.rows[0].session,
+    //                 };
+    //             }
+    //         });
+    //         break;
+    //     default:
+    //         console.log(`dBaseRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
+    //         returnedObject = false;
+    // }
+    // return returnedObject;
 }
 
-// Syntax examples: 
+// *************************************************************************************************
+// Syntax examples:
 // dBaseWrite("coach", coachrecord);
 // dBaseWrite("status", statusrecord);
-// dBaseWrite("permissions", permissionrecord);
+// dBaseWrite("statistician", statisticianrecord);
 // dBaseWrite("permissions", permissionrecord, 5);
 // dBaseWrite("session", session, 5);
-// dBaseWrite("statistician", statisticianrecord);
 // Note that coachrecord must have ten keys, three of which themselves have keys;
 // Note that statusrecord must have keys maximumCoachId, contestNumber, hostSchool, and contestDate;
 // Note that permissionrecord must have the boolean values nameEntry and scoreEntry;
 // Note that session must be a real number;
 // Note that statisticianrecord has just two keys: passWord and session;
-function dBaseWrite(reqType, record, coachId) {
+// *************************************************************************************************
+
+function dBaseWrite(reqType, record, coachId) { 
+
+
+
     switch (reqType) {
         case "coach":
             if (record.iD == "new") {
@@ -300,6 +374,79 @@ function dBaseWrite(reqType, record, coachId) {
             console.log(`dBaseWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "statistician", not ${reqType}`);
             return false;
     }
+
+
+
+
+
+    // var returnResult = false;
+    // switch (reqType) { 
+    //     case "coach":
+    //         if (record.iD == "new") {
+    //             var maximumCoachId;
+    //             db.query('SELECT * FROM "status" ;', (err, res) => {
+    //                 if (err) {
+    //                     console.error("Error executing query: dBaseWrite, case=coach, record.iD=new: ", err.stack);
+    //                 } else {
+    //                     maximumCoachId = res.rows[0].maximumCoachId + 1;
+    //                 }
+    //             });
+    //             db.query('UPDATE "status" SET "maximumCoachId" = $1 ;', [maximumCoachId]);
+    //             record.iD = maximumCoachId;
+    //             var encCoach = JSON.stringify(record);
+    //             db.query('INSERT INTO "coaches" ("id","encCoach") VALUES ($1, $2) ;', [record.iD, encCoach]);
+    //             returnResult = true;
+    //         } else {
+    //             db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id" = $2 ;', [JSON.stringify(record), record.iD]);
+    //             returnResult = true; // add error handling here.
+    //         }
+    //         break;
+    //     case "status":
+    //         db.query('UPDATE "status" SET "maximumCoachId" = $1 ;', [record.maximumCoachId]);
+    //         db.query('UPDATE "status" SET "contestNumber" = $1 ;', [record.contestNumber]);
+    //         db.query('UPDATE "status" SET "hostSchool" = $1 ;', [record.hostSchool]);
+    //         db.query('UPDATE "status" SET "contestDate" = $1 ;', [record.contestDate]);
+    //         returnResult = true; // add error handling
+    //         break;
+    //     case "permissions":
+    //         var coaches = [];
+    //         (db.query('SELECT * FROM "coaches" ;', (err, res) => {
+    //             if (err) {
+    //                 console.log(`Database error reading coaches table, ${err.stack}`);
+    //             } else {
+    //                 coaches = res.rows;
+    //                 var idx = coaches.findIndex((srchItem) => { return srchItem.id == coachId });
+    //                 var coach = JSON.parse(coaches[idx].encCoach);
+    //                 coach.permission.nameEntry = record.nameEntry;
+    //                 coach.permission.scoreEntry = record.scoreEntry;
+    //                 db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id"=$2 ;', [JSON.stringify(coach), coachId]);
+    //                 returnResult = true; // add error handling
+    //             }
+    //         }));
+    //         break;
+    //     case "session":
+    //         var coaches = [];
+    //         (db.query('SELECT * from "coaches" ;', (err, res) => {
+    //             if (err) {
+    //                 console.log(`Database error reading coaches table, ${err.stack}`);
+    //             } else {
+    //                 coaches = res.rows;
+    //                 var idx = coaches.findIndex((srchItem) => { return srchItem.id == coachId });
+    //                 var coach = JSON.parse(coaches[idx].encCoach);
+    //                 coach.session = record; //This is a simple assignment of a number.
+    //                 db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id"=$2 ;', [JSON.stringify(coach), coachId]);
+    //                 returnResult = true; // add error handling
+    //             }
+    //         }));
+    //         break;
+    //     case "statistician":
+    //         db.query('UPDATE "statistician" SET "password" = $1 ;', [record.passWord]);
+    //         db.query('UPDATE "statistician" SET "session" = $1 ;', [record.session]);
+    //         returnResult = true; // add error handling
+    //     default:
+    //         console.log(`dBaseWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "statistician", not ${reqType}`);
+    // }
+    // return returnResult;
 }
 
 // And now comes the code that will actually stay when I incorporate a database. I only need to
@@ -321,8 +468,9 @@ function addFullName(personRecord) {
 function makeAlphaSchoolsList() {
     var max = dBaseRead("status").maximumCoachId;
     var alphaSchools = [];
-    for(var iD = 1; iD <= max; iD++){ 
-        alphaSchools.push({school : dBaseRead("coach",iD).school, coachId : iD,});
+    for (var iD = 1; iD <= max; iD++){ 
+        var coach =  dBaseRead("coach", iD); // Why does VS say that 'await' has no effect on this type of expression?
+        alphaSchools.push({school : coach.school, coachId : iD,});
     }
     alphaSchools.sort((a, b) => {
         if (a.school.toUpperCase() >= b.school.toUpperCase()) {
@@ -471,10 +619,11 @@ app.post("/", (req, res) => {
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
+                    currentStatusTeamContest: currentStatus.teamContest,
                     editTeam: false,
-                    coachFirst: "",
-                    coachMiddle: "",
-                    coachLast: "",
+                    // coachFirst: "",
+                    // coachMiddle: "",
+                    // coachLast: "",
                 });
         } else {
             res.redirect("/?arrivedFrom=wrongpwd");
@@ -549,15 +698,21 @@ app.post("/statistician", (req, res) => {
                 var statusRecord = {
                     maximumCoachId: status.maximumCoachId,
                     contestNumber: req.body.contestNumber,
+                    teamContest: false,
                     hostSchool: req.body.hostSchool,
                     contestDate: req.body.contestDate,
                 }
+                if (req.body.teamContest) { statusRecord.teamContest = true } ;
                 dBaseWrite("status", statusRecord);
                 status = dBaseRead("status");
                 break;
             case "newContest":
                 state = "modifyVenue";
                 coachList.forEach((coach) => {
+                    coach.permission = {
+                        nameEntry: false,
+                        scoreEntry: false,
+                    }
                     coach.scoreCard = {
                         studentPlacement: ["empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"],
                         studentsEntered: false,
@@ -575,6 +730,7 @@ app.post("/statistician", (req, res) => {
                         ],
                         scoresEntered: false,
                     }
+                    coach.session = 0; // Log out all coaches
                     dBaseWrite("coach", coach);
                 });
                 break;
@@ -601,19 +757,20 @@ app.post("/statistician", (req, res) => {
                     break;
                 }
             case "cleanDeleted":
-                coachList.forEach((coach) => { 
-                    let deleteIndices=[];
-                    coach.students.forEach((student) => { 
-                        if(student.last.startsWith("!")){
-                            var idx = coach.students.findIndex((a)=>{return (a.iD == student.iD)});
+                coachList.forEach((coach) => {
+                    let deleteIndices = [];
+                    coach.students.forEach((student) => {
+                        if (student.last.startsWith("!")) {
+                            var idx = coach.students.findIndex((a) => { return (a.iD == student.iD) });
                             deleteIndices.push(idx);
                         }
                     });
-                    for(var j=deleteIndices.length-1; j>=0; j--){
-                        coach.students.splice(deleteIndices[j],1);
+                    for (var j = deleteIndices.length - 1; j >= 0; j--) {
+                        coach.students.splice(deleteIndices[j], 1);
                     }
                     dBaseWrite("coach", coach);
                 });
+                break;
             default:
                 console.log("statistician.ejs returned an unrecognized requestType of ", req.body.requestType);
         }
@@ -821,6 +978,7 @@ app.post("/coach", (req, res)=>{
                 if (coach.permission.nameEntry) {
                     state = "enterNames";
                 } else {
+                    console.log(`${coach.iD}: Deny permission to enter names`); // come here when the coach is refused permission to enter names.
                     state = "readOnly";
                     namesLockedMsg = true;
                 }
@@ -960,6 +1118,7 @@ app.post("/coach", (req, res)=>{
                         coachId: coach.iD,
                         session: coach.session,
                     });
+                    return;
                 } else {
                     coach.passWord = req.body.firstEntry;
                     dBaseWrite("coach", coach);
@@ -997,6 +1156,7 @@ app.post("/coach", (req, res)=>{
             currentStatusHostSchool : currentStatus.hostSchool,
             currentStatusContestDate : currentStatus.contestDate,
             currentStatusContestNumber: currentStatus.contestNumber,
+            currentStatusTeamContest: currentStatus.teamContest,
             editTeam: editTeam,
             coachFirst: coach.first,
             coachMiddle: coach.middle,
@@ -1091,10 +1251,11 @@ app.post("/rosteredit", (req, res) => {
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
+                    currentStatusTeamContest: currentStatus.teamContest,
                     editTeam: false,
-                    coachFirst: "",
-                    coachMiddle: "",
-                    coachLast: "",
+                    // coachFirst: "",
+                    // coachMiddle: "",
+                    // coachLast: "",
                 });
                 return;
         }

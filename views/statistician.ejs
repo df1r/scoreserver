@@ -31,10 +31,13 @@
                         <%if(state=="modifyVenue"){%>
                             <div class="horizontalchildren">
                                 <p>
-                                    Contest <input type="text" maxlength="1" size="1" required
+                                    Contest 
+                                    <input type="text" maxlength="1" size="1" required
                                         name="contestNumber" value="<%=status.contestNumber%>" />&nbsp;
-                                        <input type="date" required
+                                    <input type="text" maxlength="12" size="12" required
                                         name="contestDate" value="<%=status.contestDate%>" />
+                                    <input type="checkbox" name="teamContest" id="forTeamContest" value="true">
+                                    <label for="forTeamContest">Team Contest</label>
                                 </p>
                             </div>
                             <p>
@@ -53,6 +56,7 @@
                         <%} else {%>
                             <div class="horizontalchildren">
                                 <p>Contest <%=status.contestNumber%>,&nbsp;<%=status.contestDate%></p>
+                                <p><%if(status.teamContest){%>Team contest<%} else {%> Regular contest<%}%></p>
                             </div>
                             <p><%=status.hostSchool%></p>
                             <button type="submit" name="requestType" value="modifyVenue">
@@ -71,7 +75,8 @@
                     </div>
                     <div>
                         <button type="submit" form="manageTeamsForm" 
-                            name="requestType" value="manageTeams">
+                            name="requestType" value="manageTeams"
+                            onclick='return confirm("Avoid modifying team details simultaneously with the coach")'>
                             Manage Teams
                         </button>
                     </div>
@@ -89,12 +94,16 @@
                     <input type="checkbox" class="invisible" checked="checked"
                         name="session" value="<%=session%>" />
                     <div id="contestcontrols", class="horizontalchildren">
-                        <button type="submit" name="requestType" value="openNames">
-                            open names
-                        </button>
-                        <button type="submit" name="requestType" value="closeNames">
-                            lock names
-                        </button>
+                        <%if(status.teamContest) {%>
+                            <p>&nbsp;</p>
+                        <%} else {%>
+                            <button type="submit" name="requestType" value="openNames">
+                                open names
+                            </button>
+                            <button type="submit" name="requestType" value="closeNames">
+                                lock names
+                            </button>
+                        <%}%>
                         <button type="submit" name="requestType" value="openScores">
                             open scores
                         </button>
@@ -109,15 +118,17 @@
                                     <tr>
                                         <%var idx=coachList.findIndex((coach)=>{return(coach.iD == alphaSchool.coachId);});%>
                                         <td><%=coachList[idx].school%><br /><%=coachList[idx].fullName%></td>
-                                        <td class="<%if(coachList[idx].permission.nameEntry){%>green <%}else{%>red <%}%>tdnarrow">
-                                            <label for="<%='names'+coachList[idx].iD%>">
-                                                Names<br />
-                                                <%if(coachList[idx].permission.nameEntry){%>Open<%}else{%>Locked<%}%>
-                                            </label><br />
-                                            <button type="submit" class="invisible" id="<%='names'+coachList[idx].iD%>" 
-                                                name="requestType" value="<%='namePermission'+alphaSchool.coachId%>">
-                                            </button>
-                                        </td>
+                                        <%if(!(status.teamContest)){%>
+                                            <td class="<%if(coachList[idx].permission.nameEntry){%>green <%}else{%>red <%}%>tdnarrow">
+                                                <label for="<%='names'+coachList[idx].iD%>">
+                                                    Names<br />
+                                                    <%if(coachList[idx].permission.nameEntry){%>Open<%}else{%>Locked<%}%>
+                                                </label><br />
+                                                <button type="submit" class="invisible" id="<%='names'+coachList[idx].iD%>" 
+                                                    name="requestType" value="<%='namePermission'+alphaSchool.coachId%>">
+                                                </button>
+                                            </td>
+                                        <%}%>
                                         <td class="<%if(coachList[idx].permission.scoreEntry){%>green <%}else{%>red <%}%>tdnarrow">
                                             <label for="<%='scores'+coachList[idx].iD%>"
                                                 >Scores<br />

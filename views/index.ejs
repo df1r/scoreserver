@@ -8,7 +8,7 @@
 </head>
 <body>
         <form action="/", method = "POST">
-            <select name="coachId" required>
+            <select name="coachId" required autofocus >
                 <option value="">Choose your School</option>
                 <% alphaSchools.forEach(record => { %>
                     <option name="coachId" value="<%=record.coachId%>"><%=record.school%></option>
@@ -16,7 +16,7 @@
                 <option name="coachId" value="statistician">Statistician</option>
             </select>
             <label for="pwd">Password: </label>
-            <input type="text" id="pwd" name="passWord" required />
+            <input type="passWord" id="pwd" name="passWord" required autocomplete="off" />
             <button type="submit" name="requestType" value="readOnly">login</button>
         </form>
 
