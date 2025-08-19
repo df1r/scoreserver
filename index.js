@@ -15,7 +15,7 @@ var logPath = "./logs/" + dateNow.toDateString() + ' -' + ' Start Time - ' + tim
 
 consoleLogToFile({
     logFilePath: logPath,
-})
+});
 
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({ extended: false }));

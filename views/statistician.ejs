@@ -76,6 +76,11 @@
                         </button>
                     </div>
                     <div>
+                        <button id="beginAutoBackups">
+                            Begin auto-backups
+                        </button>
+                    </div>
+                    <div>
                         <button type="submit" form="manageTeamsForm" 
                             name="requestType" value="manageTeams"
                             onclick='return confirm("Avoid modifying team details simultaneously with the coach")'>
@@ -99,7 +104,7 @@
                             </button>
                             <button type="submit" id="downBack" form="statform"
                                     name="requestType" value="downloadBackup">
-                                Download backup data
+                                Download backup data and stop autobackup
                             </button>
                             <button id="finishEndingContest">
                                 Done
@@ -122,7 +127,7 @@
                             </button>
                             <button type="submit" id="downBack" class="invisible" form="statform"
                                     name="requestType" value="downloadBackup">
-                                Download backup data
+                                Download backup data and stop autobackup
                             </button>
                             <button class="invisible" id="finishEndingContest">
                                 Done

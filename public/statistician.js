@@ -10,13 +10,17 @@ var rankings = document.getElementById("rankings");
 var downPaste = document.getElementById("downPaste");
 var downBack = document.getElementById("downBack");
 var downBackAuto = document.getElementById("downBackAuto");
+var beginAutoBackups = document.getElementById("beginAutoBackups");
+var backingUp = 0;
 var interval = 60000;
 
 function backupPrompt() {
     downBackAuto.click();
 }
 
-var backingUp = setTimeout(backupPrompt, interval);
+beginAutoBackups.addEventListener("click", () => { 
+    backingUp = setTimeout(backupPrompt, interval);
+});
 
 restoreReqButton.addEventListener("click", () => { 
     restoreReqButton.classList.add("invisible");
