@@ -1,29 +1,78 @@
 // Security Issues: Address these points at the end of the project.
 // Learn about https
-// Stop autofill suggestions for password fields and make them hidden.
 
 import express from "express";
 import bodyParser from "body-parser"; //not sure this is necessary.
-// import pg from "pg";
+import fs from "fs";
+import { consoleLogToFile } from "console-log-to-file";
 
 const app = express();
 const port = 3000;
 
-// const db = new pg.Client({
-//     user: "postgres",
-//     host: "localhost",
-//     database: "scoreserver",
-//     password: "Dba.1190721",
-//     port: 5433,
-// });
+var dateNow = new Date();
+var timeNow = dateNow.getHours() + '-' + dateNow.getMinutes();
+var logPath = "./logs/" + dateNow.toDateString() + ' -' + ' Start Time - ' + timeNow + ".log";
 
-// db.connect();
-
+consoleLogToFile({
+    logFilePath: logPath,
+})
 
 app.use(express.static("public"));
-app.use(bodyParser.urlencoded({ extended : false }))
+app.use(bodyParser.urlencoded({ extended: false }));
 
-function DbCoachRecord(iD, first, middle, last, school) {// This is a constructor function, used when a coach is added to the database.
+var doStatus = {
+    maximumCoachId : 0,
+    contestNumber: 1,
+    teamContest: false,
+    hostSchool: "Please enter host school",
+    contestDate: "yyyy-mm-dd",
+}
+
+var doStatistician = {
+    passWord: "CJML",
+    session: 0,
+}
+
+var doCoaches = [];
+
+
+function isJSONString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        console.log("JSON problem: ", e);
+        return false;
+    }
+    return true;
+}
+
+function sumTen(array) {
+    return (
+        Number(array[0])
+        + Number(array[1])
+        + Number(array[2])
+        + Number(array[3])
+        + Number(array[4])
+        + Number(array[5])
+        + Number(array[6])
+        + Number(array[7])
+        + Number(array[8])
+        + Number(array[9]));
+}
+
+function sumTopThree(array) {
+    array.forEach((item) => { 
+        item = Number(item);
+    });
+    if (array.length < 3) {
+        return (array[1] || 0) + (array[0] || 0);
+    } else {
+        array.sort((a, b) => { return b - a });
+        return array[0] + array[1] + array[2];
+    }
+}
+
+function DoCoachRecord(iD, first, middle, last, school) { // This is a constructor function, used when a coach is added to the data object.
     this.iD = iD;
     this.passWord = "CJML";
     this.session = 0;
@@ -32,7 +81,7 @@ function DbCoachRecord(iD, first, middle, last, school) {// This is a constructo
     this.last = last;
     this.school = school;
     this.students = []; // A student is a record with first, middle, last, iD
-    this.scoreCard = {
+    this.scoreSheet = {
         studentPlacement: ["empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"],
         studentsEntered: false,
         scores : [
@@ -54,261 +103,49 @@ function DbCoachRecord(iD, first, middle, last, school) {// This is a constructo
         nameEntry : false,
         scoreEntry : false,
     }
+    this.place = "TBD"
 }
 
 
-// Below are the data that will come from the database in a later version
-// const date = new Date(Date.UTC(2025, 11, 26));
+// *************************************************************************************************
+// Syntax examples:
+// dObjectRead("coach", 5);
+// dObjectRead("status");
+// dObjectRead("statistician");
+// *************************************************************************************************
 
-var dbStatus = {
-    maximumCoachId : 2,
-    contestNumber: 4,
-    teamContest: false,
-    hostSchool: "Eric R. Blitzkrieg Canning Academy",
-    contestDate: "Dec 25, 2025",
-    // contestDate: new Date(Date.UTC(2025, 11, 26)).toLocaleDateString("en-US", { day: "2-digit", month: "short", year: "numeric" }),
-}
-var dbCoaches = [
-    new DbCoachRecord(1, "Vera","","Vacation","UC Tech"),
-    new DbCoachRecord(2,"Progg","","Nauseous","Montgomery High School"),
-];
-
-
-dbCoaches[0].students = [
-    {
-        first : "Bangus",
-        middle : "",
-        last : "Finch",
-        iD : 1,
-    },
-    {
-        first : "Potatahed",
-        middle : "",
-        last : "Bircummins",
-        iD : 2,
-    },
-    {
-        first : "Donpoop",
-        middle : "",
-        last : "Poopidoop",
-        iD : 3,
-    },
-    {
-        first : "1Flippy",
-        middle : "",
-        last : "!Floppos",
-        iD : 4,
-    },
-    {
-        first : "Gus",
-        middle : "",
-        last : "Underscrat",
-        iD : 5,
-    },
-    {
-        first : "Spuckles",
-        middle : "",
-        last : "Underscrat",
-        iD : 6,
-    },
-    {
-        first : "Pinkie",
-        middle : "",
-        last : "Winkles",
-        iD : 7,
-    },
-    {
-        first : "Arthur",
-        middle : "",
-        last : "Bardsplar",
-        iD : 8,
-    },
-    {
-        first : "Sunshine",
-        middle : "",
-        last : "Spaghetti",
-        iD : 9,
-    },
-    {
-        first : "Reorari",
-        middle : "",
-        last : "Ferrari",
-        iD : 10,
-    },
-    {
-        first : "Spuckles",
-        middle : "",
-        last : "Dopeslinger",
-        iD : 11,
-    },
-]
-
-dbCoaches[1].students = [
-    {
-        first : "Peoria",
-        middle : "",
-        last : "Frindom",
-        iD : 1,
-    },
-    {
-        first : "Queasles",
-        middle : "",
-        last : "Rungrun",
-        iD : 2,
-    },
-    {
-        first : "Kurt",
-        middle : "",
-        last : "Hurtzenwurst",
-        iD : 3,
-    },
-    {
-        first : "Rumrum",
-        middle : "",
-        last : "Humdrum",
-        iD : 4,
-    },
-    {
-        first : "Ooflewiggies",
-        middle : "",
-        last : "Po",
-        iD : 5,
-    },
-    {
-        first : "Trusk",
-        middle : "",
-        last : "Palatial",
-        iD : 6,
-    },
-    {
-        first : "Kyle",
-        middle : "",
-        last : "Forawhile",
-        iD : 7,
-    },
-    {
-        first : "Blue",
-        middle : "",
-        last : "Grabingoe",
-        iD : 8,
-    },
-    {
-        first : "Unt",
-        middle : "",
-        last : "Berunder",
-        iD : 9,
-    },
-    {
-        first : "Wozzle",
-        middle : "",
-        last : "Buns",
-        iD : 10,
-    },
-    {
-        first : "Cathy",
-        middle : "",
-        last : "Buns",
-        iD : 11,
-    },
-]
-
-var dbStatistician = {
-    passWord: "CJML",
-    session: 0,
-}
-
-// End of the typed-in data for testing that will later come from the database
-
-// The functions dBaseRead(...) and dBaseWrite(...) are placeholders for database commands
-// Syntax examples: 
-// dBaseRead("coach", 5); 
-// dBaseRead("status"); 
-// dBaseRead("statistician");
-function dBaseRead(reqType, coachId) { 
-
+function dObjectRead(reqType, coachId) {
 
     switch (reqType) {
         case "coach":
             if (coachId) {
-                var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
-                var returnedCoach = JSON.parse(JSON.stringify(dbCoaches[idx]));
+                var idx = doCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
+                var returnedCoach = JSON.parse(JSON.stringify(doCoaches[idx]));
                 return returnedCoach;
             } else {
-                console.log("dBaseRead: coach ID was expected as second argument");
+                console.log("dObjectRead: coach ID was expected as second argument");
                 return;
             }
         case "status":
-            var returnedStatus = JSON.parse(JSON.stringify(dbStatus));
+            var returnedStatus = JSON.parse(JSON.stringify(doStatus));
             return returnedStatus;
         case "statistician":
-            var returnedStatistician = JSON.parse(JSON.stringify(dbStatistician));
+            var returnedStatistician = JSON.parse(JSON.stringify(doStatistician));
             return returnedStatistician;
         default:
-            console.log(`dBaseRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
+            console.log(`dObjectRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
             return false;
     }
-
-
-
-
-    // var returnedObject = false;
-    // switch (reqType) {
-    //     case "coach":
-    //         if (coachId) {
-    //             var dbCoaches = [];
-    //             db.query('SELECT * FROM "coaches" ;', (err, res) => {
-    //                 if (err) {
-    //                     console.error("Error executing query: dBaseRead, case=coach, coachId=true: ", err.stack);
-    //                 } else {
-    //                     dbCoaches = res.rows;
-    //                     var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
-    //                     returnedObject = JSON.parse(dbCoaches[idx].encCoach);
-    //                 }
-    //             });
-    //         } else {
-    //             console.log("dBaseRead: coach ID was expected as second argument");
-    //         }
-    //         break;
-    //     case "status":
-    //         try {
-    //             const statusTable = await db.query('SELECT * FROM "status" ;');
-    //             returnedObject = {
-    //                 maximumCoachId: statusTable.rows[0].maximumcoachid,
-    //                 contestNumber: statusTable.rows[0].contestnumber,
-    //                 hostSchool: statusTable.rows[0].hostschool,
-    //                 contestDate: statusTable.rows[0].contestdate,
-    //             }
-    //             console.log("maximumCoachId= ", returnedObject.maximumCoachId);
-    //         } catch (err) {
-    //             console.log("dBaseRead case=status", err);
-    //         }
-    //         break;
-    //     case "statistician":
-    //         db.query('SELECT * FROM "statistician" ;', (err, res) => {
-    //             if (err) {
-    //                 console.error("Error executing query: dBaseRead, case=statistician", err.stack);
-    //             } else {
-    //                 returnedObject = {
-    //                     passWord: res.rows[0].password,
-    //                     session: res.rows[0].session,
-    //                 };
-    //             }
-    //         });
-    //         break;
-    //     default:
-    //         console.log(`dBaseRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
-    //         returnedObject = false;
-    // }
-    // return returnedObject;
 }
 
 // *************************************************************************************************
 // Syntax examples:
-// dBaseWrite("coach", coachrecord);
-// dBaseWrite("status", statusrecord);
-// dBaseWrite("statistician", statisticianrecord);
-// dBaseWrite("permissions", permissionrecord, 5);
-// dBaseWrite("session", session, 5);
+// dObjectWrite("coach", coachrecord);
+// dObjectWrite("status", statusrecord);
+// dObjectWrite("statistician", statisticianrecord);
+// dObjectWrite("permissions", permissionrecord, 5);
+// dObjectWrite("session", session, 5);
+// dObjectWrite("place", 9, 12);
 // Note that coachrecord must have ten keys, three of which themselves have keys;
 // Note that statusrecord must have keys maximumCoachId, contestNumber, hostSchool, and contestDate;
 // Note that permissionrecord must have the boolean values nameEntry and scoreEntry;
@@ -316,141 +153,72 @@ function dBaseRead(reqType, coachId) {
 // Note that statisticianrecord has just two keys: passWord and session;
 // *************************************************************************************************
 
-function dBaseWrite(reqType, record, coachId) { 
-
-
+function dObjectWrite(reqType, record, coachId) { 
 
     switch (reqType) {
         case "coach":
             if (record.iD == "new") {
-                var statusRecord = dBaseRead("status");
+                var statusRecord = dObjectRead("status");
                 statusRecord.maximumCoachId += 1;
-                dBaseWrite("status", statusRecord);
+                dObjectWrite("status", statusRecord);
                 record.iD = statusRecord.maximumCoachId;
-                dbCoaches.push(record);
+                doCoaches.push(record);
                 return true;
             } else {
-                var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == record.iD });
+                var idx = doCoaches.findIndex((srchItem) => { return srchItem.iD == record.iD });
                 if (idx == -1) {
-                    console.log("dBaseWrite: coachId not recognized.");
+                    console.log("dObjectWrite: coachId not recognized.");
                     return false
                 } else {
-                    dbCoaches[idx] = JSON.parse(JSON.stringify(record)); // For ease of coding I have
-                        // not bothered to avoid storing dbCoaches[idx].fullName. But I have
+                    doCoaches[idx] = JSON.parse(JSON.stringify(record)); // For ease of coding I have
+                        // not bothered to avoid storing doCoaches[idx].fullName. But I have
                         // tried to write the rest of the code with the assumption that the fullName
-                        // key is absent in the database coach record.
+                        // key can be absent in the data object coach record.
                     return true;
                 }
             }
         case "status":
-            dbStatus = JSON.parse(JSON.stringify(record));
+            doStatus = JSON.parse(JSON.stringify(record));
             return true;
         case "permissions":
             if (coachId) {
-                var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
-                dbCoaches[idx].permission.nameEntry = record.nameEntry;
-                dbCoaches[idx].permission.scoreEntry = record.scoreEntry;
+                var idx = doCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
+                doCoaches[idx].permission.nameEntry = record.nameEntry;
+                doCoaches[idx].permission.scoreEntry = record.scoreEntry;
             } else {
-                for (var j = 0; j < dbstatus.maximumCoachId; j++) { // This line assumes that dbCoaches is never a sparse array,
+                for (var j = 0; j < dbstatus.maximumCoachId; j++) { // This line assumes that doCoaches is never a sparse array,
                         // and that no coach ID's are ever skipped, both of which should be true.
-                    dbCoaches[j].permission.nameEntry = record.nameEntry;
-                    dbCoaches[j].permission.scoreEntry = record.scoreEntry;
+                    doCoaches[j].permission.nameEntry = record.nameEntry;
+                    doCoaches[j].permission.scoreEntry = record.scoreEntry;
                 }
             }
             return true;
         case "session":
-            var idx = dbCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
+            var idx = doCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
             if (idx == -1) {
-                console.log(`dBaseWrite: coach ID not recognized.`);
+                console.log(`dObjectWrite: coach ID not recognized.`);
                 return false;
             } else {
-                dbCoaches[idx].session = record; // This is a simple assignment of a number.
+                doCoaches[idx].session = record; // This is a simple assignment of a number.
+                return true;
+            }
+        case "place":
+            var idx = doCoaches.findIndex((srchItem) => { return srchItem.iD == coachId });
+            if (idx == -1) {
+                console.log(`dObjectWrite: coach ID not recognized.`);
+                return false;
+            } else {
+                doCoaches[idx].place = record; // This is a simple assignment of a number.
                 return true;
             }
         case "statistician":
-            dbStatistician = JSON.parse(JSON.stringify(record));
+            doStatistician = JSON.parse(JSON.stringify(record));
             return true;
         default:
-            console.log(`dBaseWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "statistician", not ${reqType}`);
+            console.log(`dObjectWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "place" or "statistician", not ${reqType}`);
             return false;
     }
-
-
-
-
-
-    // var returnResult = false;
-    // switch (reqType) { 
-    //     case "coach":
-    //         if (record.iD == "new") {
-    //             var maximumCoachId;
-    //             db.query('SELECT * FROM "status" ;', (err, res) => {
-    //                 if (err) {
-    //                     console.error("Error executing query: dBaseWrite, case=coach, record.iD=new: ", err.stack);
-    //                 } else {
-    //                     maximumCoachId = res.rows[0].maximumCoachId + 1;
-    //                 }
-    //             });
-    //             db.query('UPDATE "status" SET "maximumCoachId" = $1 ;', [maximumCoachId]);
-    //             record.iD = maximumCoachId;
-    //             var encCoach = JSON.stringify(record);
-    //             db.query('INSERT INTO "coaches" ("id","encCoach") VALUES ($1, $2) ;', [record.iD, encCoach]);
-    //             returnResult = true;
-    //         } else {
-    //             db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id" = $2 ;', [JSON.stringify(record), record.iD]);
-    //             returnResult = true; // add error handling here.
-    //         }
-    //         break;
-    //     case "status":
-    //         db.query('UPDATE "status" SET "maximumCoachId" = $1 ;', [record.maximumCoachId]);
-    //         db.query('UPDATE "status" SET "contestNumber" = $1 ;', [record.contestNumber]);
-    //         db.query('UPDATE "status" SET "hostSchool" = $1 ;', [record.hostSchool]);
-    //         db.query('UPDATE "status" SET "contestDate" = $1 ;', [record.contestDate]);
-    //         returnResult = true; // add error handling
-    //         break;
-    //     case "permissions":
-    //         var coaches = [];
-    //         (db.query('SELECT * FROM "coaches" ;', (err, res) => {
-    //             if (err) {
-    //                 console.log(`Database error reading coaches table, ${err.stack}`);
-    //             } else {
-    //                 coaches = res.rows;
-    //                 var idx = coaches.findIndex((srchItem) => { return srchItem.id == coachId });
-    //                 var coach = JSON.parse(coaches[idx].encCoach);
-    //                 coach.permission.nameEntry = record.nameEntry;
-    //                 coach.permission.scoreEntry = record.scoreEntry;
-    //                 db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id"=$2 ;', [JSON.stringify(coach), coachId]);
-    //                 returnResult = true; // add error handling
-    //             }
-    //         }));
-    //         break;
-    //     case "session":
-    //         var coaches = [];
-    //         (db.query('SELECT * from "coaches" ;', (err, res) => {
-    //             if (err) {
-    //                 console.log(`Database error reading coaches table, ${err.stack}`);
-    //             } else {
-    //                 coaches = res.rows;
-    //                 var idx = coaches.findIndex((srchItem) => { return srchItem.id == coachId });
-    //                 var coach = JSON.parse(coaches[idx].encCoach);
-    //                 coach.session = record; //This is a simple assignment of a number.
-    //                 db.query('UPDATE "coaches" SET "encCoach" = $1 WHERE "id"=$2 ;', [JSON.stringify(coach), coachId]);
-    //                 returnResult = true; // add error handling
-    //             }
-    //         }));
-    //         break;
-    //     case "statistician":
-    //         db.query('UPDATE "statistician" SET "password" = $1 ;', [record.passWord]);
-    //         db.query('UPDATE "statistician" SET "session" = $1 ;', [record.session]);
-    //         returnResult = true; // add error handling
-    //     default:
-    //         console.log(`dBaseWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "statistician", not ${reqType}`);
-    // }
-    // return returnResult;
 }
-
-// And now comes the code that will actually stay when I incorporate a database. I only need to
-// redefine dBaseRead and dBaseWrite above and the rest of the code should work.
 
 // addFullName adds a key called "fullName" to a record, to help the ejs code display students or coaches.
 
@@ -463,13 +231,13 @@ function addFullName(personRecord) {
     return;
 }
 
-// makeAlphaSchoolsList uses the list of coaches in the database to create an alphabetical list of schools.
+// makeAlphaSchoolsList uses the list of coaches in the data object to create an alphabetical list of schools.
 
 function makeAlphaSchoolsList() {
-    var max = dBaseRead("status").maximumCoachId;
+    var max = dObjectRead("status").maximumCoachId;
     var alphaSchools = [];
     for (var iD = 1; iD <= max; iD++){ 
-        var coach =  dBaseRead("coach", iD); // Why does VS say that 'await' has no effect on this type of expression?
+        var coach =  dObjectRead("coach", iD); 
         alphaSchools.push({school : coach.school, coachId : iD,});
     }
     alphaSchools.sort((a, b) => {
@@ -566,22 +334,24 @@ app.get("/", (req, res)=>{
     var arrivalMsg = (req.query.arrivedFrom || "");
     console.log(`Login page. ${arrivalMsg}`)
     var alphaSchools = makeAlphaSchoolsList();
+    var status = dObjectRead("status");
     res.render("index.ejs", {
         alphaSchools : alphaSchools,
-        arrivalMsg : arrivalMsg,
-    }); // We will have to send to the login page: the contest number, date and host school.
+        arrivalMsg: arrivalMsg,
+        status: status,
+    });
 });
 
 app.post("/", (req, res) => {
     if (req.body.coachId == "statistician") {
-        var statistician = dBaseRead("statistician");
+        var statistician = dObjectRead("statistician");
         if (req.body.passWord == statistician.passWord) {
             statistician.session = Math.random();
-            dBaseWrite("statistician", statistician);
-            var status = dBaseRead("status");
+            dObjectWrite("statistician", statistician);
+            var status = dObjectRead("status");
             var coachList = [];
             for (var j = 1; j <= status.maximumCoachId; j++) {
-                coachList.push(dBaseRead("coach", j));
+                coachList.push(dObjectRead("coach", j));
             }
             coachList.forEach((coach) => {
                 addFullName(coach);
@@ -593,16 +363,17 @@ app.post("/", (req, res) => {
                 coachList: coachList,
                 alphaSchools: alphaSchools,
                 session: statistician.session, // At the next server request the session number must match, to prevent simultaneous logins.
+                announcements: null,
             });
         } else {
             res.redirect("/?arrivedFrom=wrongpwd");
         }
     } else {
-        var coach = dBaseRead("coach", req.body.coachId);
-        var currentStatus = dBaseRead("status");
+        var coach = dObjectRead("coach", req.body.coachId);
+        var currentStatus = dObjectRead("status");
         if (req.body.passWord == coach.passWord) {
             coach.session = Math.random();
-            dBaseWrite("session", coach.session, coach.iD);
+            dObjectWrite("session", coach.session, coach.iD);
             addFullName(coach);
             console.log(`Coach ${coach.iD}: ${coach.fullName} has logged in.`);
             var alphaStudents = makeAlphaStudentsList(coach);
@@ -614,16 +385,17 @@ app.post("/", (req, res) => {
                     coachFullName: coach.fullName, // The full coach record is not sent, to avoid serving the password.
                     coachSchool: coach.school,
                     alphaStudents: alphaStudents,
-                    coachScoreCardStudentPlacement: coach.scoreCard.studentPlacement,
-                    coachScoreCardScores: coach.scoreCard.scores,
+                    coachScoreSheetStudentPlacement: coach.scoreSheet.studentPlacement,
+                    coachScoreSheetScores: coach.scoreSheet.scores,
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
                     currentStatusTeamContest: currentStatus.teamContest,
                     editTeam: false,
-                    // coachFirst: "",
-                    // coachMiddle: "",
-                    // coachLast: "",
+                    place: coach.place,
+                    coachFirst: "",
+                    coachMiddle: "",
+                    coachLast: "",
                 });
         } else {
             res.redirect("/?arrivedFrom=wrongpwd");
@@ -634,14 +406,15 @@ app.post("/", (req, res) => {
 
 
 app.post("/statistician", (req, res) => {
-    var statistician = dBaseRead("statistician");
+    var statistician = dObjectRead("statistician");
     console.log(`statistician: Request ${req.body.requestType}`);
     if (statistician.session == req.body.session) {
-        var status = dBaseRead("status");
+        var announcements;
+        var status = dObjectRead("status");
         var state = "readOnly";
         var coachList = [];
         for (var j = 1; j <= status.maximumCoachId; j++) {
-            coachList.push(dBaseRead("coach", j));
+            coachList.push(dObjectRead("coach", j));
         }
         coachList.forEach((coach) => {
             addFullName(coach);
@@ -660,36 +433,36 @@ app.post("/statistician", (req, res) => {
             case "openNames": // Open name entry for ALL coaches
                 coachList.forEach((coach) => {
                     coach.permission.nameEntry = true;
-                    dBaseWrite("permissions", coach.permission, coach.iD);
+                    dObjectWrite("permissions", coach.permission, coach.iD);
                 });
                 break;
             case "closeNames": // Close name entry for ALL coaches
                 coachList.forEach((coach) => {
                     coach.permission.nameEntry = false;
-                    dBaseWrite("permissions", coach.permission, coach.iD);
+                    dObjectWrite("permissions", coach.permission, coach.iD);
                 });
                 break;
             case "openScores": // Open score entry for ALL coaches
                 coachList.forEach((coach) => {
                     coach.permission.scoreEntry = true;
-                    dBaseWrite("permissions", coach.permission, coach.iD);
+                    dObjectWrite("permissions", coach.permission, coach.iD);
                 });
                 break;
             case "closeScores": // Close score entry for ALL coaches
                 coachList.forEach((coach) => {
                     coach.permission.scoreEntry = false;
-                    dBaseWrite("permissions", coach.permission, coach.iD);
+                    dObjectWrite("permissions", coach.permission, coach.iD);
                 });
                 break;
             case "namePermission": // Toggle name entry permission for one coach (coachId, computed above)
                 var idx = coachId - 1;
                 coachList[idx].permission.nameEntry = !(coachList[idx].permission.nameEntry);
-                dBaseWrite("permissions", coachList[idx].permission, coachId);
+                dObjectWrite("permissions", coachList[idx].permission, coachId);
                 break;
             case "scorePermission": // Toggle score entry permission for one coach (coachId, computed above)
                 var idx = coachId - 1;
                 coachList[idx].permission.scoreEntry = !(coachList[idx].permission.scoreEntry);
-                dBaseWrite("permissions", coachList[idx].permission, coachId);
+                dObjectWrite("permissions", coachList[idx].permission, coachId);
                 break;
             case "modifyVenue":
                 state = "modifyVenue";
@@ -703,8 +476,8 @@ app.post("/statistician", (req, res) => {
                     contestDate: req.body.contestDate,
                 }
                 if (req.body.teamContest) { statusRecord.teamContest = true } ;
-                dBaseWrite("status", statusRecord);
-                status = dBaseRead("status");
+                dObjectWrite("status", statusRecord);
+                status = dObjectRead("status");
                 break;
             case "newContest":
                 state = "modifyVenue";
@@ -713,7 +486,7 @@ app.post("/statistician", (req, res) => {
                         nameEntry: false,
                         scoreEntry: false,
                     }
-                    coach.scoreCard = {
+                    coach.scoreSheet = {
                         studentPlacement: ["empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty"],
                         studentsEntered: false,
                         scores: [
@@ -731,7 +504,8 @@ app.post("/statistician", (req, res) => {
                         scoresEntered: false,
                     }
                     coach.session = 0; // Log out all coaches
-                    dBaseWrite("coach", coach);
+                    coach.place = "TBD";
+                    dObjectWrite("coach", coach);
                 });
                 break;
             case "changePwd":
@@ -753,9 +527,230 @@ app.post("/statistician", (req, res) => {
                     return;
                 } else {
                     statistician.passWord = req.body.firstEntry;
-                    dBaseWrite("statistician", statistician);
+                    dObjectWrite("statistician", statistician);
                     break;
                 }
+            case "computeRanking":  // This not only populates the coach.place's, but also renders the announcements.
+                state = "showAnnouncements"; // Open the contest ending box when the state is showAnnouncements.
+                if (!(status.teamContest)) {
+                    announcements = {
+                        firstPlace: "1: ",
+                        secondPlace: "2: ",
+                        thirdPlace: "3: ",
+                        highScore: 0,
+                        highScorers: "",
+                    };
+                    var teamScores = [];
+                    coachList.forEach((coach) => {
+                        var varsityScores = [];
+                        for (var j = 0; j < 5; j++) {
+                            varsityScores.push(sumTen(coach.scoreSheet.scores[j]));
+                            announcements.highScore = Math.max(announcements.highScore, varsityScores[varsityScores.length - 1]);
+                        }
+                        for (var j = 5; j < 10; j++) {
+                            announcements.highScore = Math.max(announcements.highScore, sumTen(coach.scoreSheet.scores[j]));
+                        }
+                        // varsityScores.sort((scoreA, scoreB) => {
+                        //     return (scoreB - scoreA);
+                        // });
+                        // teamScores.push(varsityScores[0] + varsityScores[1] + varsityScores[2]);
+                        teamScores.push(sumTopThree(varsityScores));
+                    });
+                    var sortedScores = teamScores.slice().sort((scoreA, scoreB) => { return (scoreB - scoreA) });
+                    var ranking = teamScores.map((score) => { return (sortedScores.findIndex((sortedScore) => { return (sortedScore == score); }) + 1) });
+                    var j = 0;
+                    coachList.forEach((coach) => {
+                        coach.place = ranking[j];
+                        if (ranking[j] == 1) {
+                            announcements.firstPlace = announcements.firstPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + "\n";
+                        } else if (ranking[j] == 2) {
+                            announcements.secondPlace = announcements.secondPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + ",\n";
+                        } else if (ranking[j] == 3) {
+                            announcements.thirdPlace = announcements.thirdPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + ",\n";
+                        }
+                        dObjectWrite("place", coach.place, coach.iD);
+                        j++;
+                        for (var k = 0; k < 10; k++) {
+                            if (sumTen(coach.scoreSheet.scores[k]) == announcements.highScore) {
+                                console.log(`coach ${coach.iD}: coach.scoreSheet.studentPlacement[${k}] = ${coach.scoreSheet.studentPlacement[k]}`);
+                                console.log(`coach.students[${coach.scoreSheet.studentPlacement[k] - 1}] is being sent to addFullNames.`);
+                                addFullName(coach.students[coach.scoreSheet.studentPlacement[k] - 1]);
+                                announcements.highScorers = announcements.highScorers + coach.school + ": "
+                                    + coach.students[coach.scoreSheet.studentPlacement[k] - 1].fullName + ",\n";
+                            }
+                        }
+                    });
+                    console.log(`High scorers are ${announcements.highScorers}`);
+                } else {
+                    announcements = {
+                        firstPlace: "1: ",
+                        secondPlace: "2: ",
+                        thirdPlace: "3: ",
+                    };
+                    var teamScores = [];
+                    coachList.forEach((coach) => {
+                        teamScores.push(sumTen(coach.scoreSheet.scores[0]));
+                    });
+                    var sortedScores = teamScores.slice().sort((scoreA, scoreB) => { return (scoreB - scoreA) });
+                    var ranking = teamScores.map((score) => { return (sortedScores.findIndex((sortedScore) => { return (sortedScore == score); }) + 1) });
+                    var j = 0;
+                    coachList.forEach((coach) => {
+                        coach.place = ranking[j];
+                        if (ranking[j] == 1) {
+                            announcements.firstPlace = announcements.firstPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + "\n";
+                        } else if (ranking[j] == 2) {
+                            announcements.secondPlace = announcements.secondPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + ",\n";
+                        } else if (ranking[j] == 3) {
+                            announcements.thirdPlace = announcements.thirdPlace + coach.school + ", score=" + teamScores[coach.iD - 1] + ",\n";
+                        }
+                        dObjectWrite("place", coach.place, coach.iD);
+                        j++;
+                    });
+                }
+                break;
+            case "downloadPasteable":
+                var lines = [];
+                var maxNumberStudents = 0;
+                coachList.forEach((coach) => { 
+                    maxNumberStudents = Math.max(maxNumberStudents, coach.students.length);
+                });
+                if (status.teamContest) { 
+                    lines[0] = status.contestDate + "," + status.contestNumber;
+                    coachList.forEach((coach) => {  // The cb parameter "coach" is not used, but this seems like the clearest way to write loop.
+                        lines[0] += ",".repeat(12);
+                    });
+                    lines[0] = lines[0].slice(0,-1); // Date, Contest number, then 11 empty cells for the first coach, 12 for each thereafter
+                    lines[1] = ",";
+                    coachList.forEach((coach) => { 
+                        lines[1]+=coach.school+","+"Participated,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,"
+                    });
+                    lines[1] = lines[1].slice(0, -1); // This is to remove the trailing comma after the final "Q10".
+                    lines[2] = "";
+                    coachList.forEach((coach) => { 
+                        lines[2] += "," + coach.fullName + "," + coach.scoreSheet.studentPlacement[0];
+                        for (var k = 0; k < 10; k++) { 
+                            lines[2] += "," + coach.scoreSheet.scores[0][k];
+                        }
+                    });
+                    lines[3] = "";
+                    coachList.forEach((coach) => { 
+                        lines[3] += ",".repeat(12); // no. columns = 1+12*(no. coaches), so no. commas = 12*(no. coaches)
+                    });
+                    // for (var j = 4; j < 13; j++) { 
+                    for (var row = 5; row < 14; row++) { 
+                        lines[row - 1] = lines[row - 2];
+                    }
+                } else { 
+                    lines[0] = status.contestDate + "," + status.contestNumber;
+                    coachList.forEach((coach) => { 
+                        lines[0] += ",".repeat(12);
+                    });
+                    lines[0] = lines[0].slice(0,-1); // Date, Contest number, then 11 empty cells for the first coach, 12 for each thereafter
+                    lines[1] = ",";
+                    coachList.forEach((coach) => { 
+                        lines[1]+=coach.school+","+"Students,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,"
+                    });
+                    lines[1] = lines[1].slice(0, -1); // This is to remove the trailing comma after the final "Q10".
+                    lines[2] = "";
+                    coachList.forEach((coach) => { // filling row 3 with studentSeat 1 on the sheet
+                        var studentId = coach.scoreSheet.studentPlacement[0];
+                        if (studentId == "empty") { studentId = 0; }
+                        lines[2] += "," + coach.fullName + "," + studentId;
+                        for (var k = 0; k < 10; k++) { 
+                            lines[2] += "," + coach.scoreSheet.scores[0][k];
+                        }
+                    });
+                    for (var row = 4; row < 13; row++) { 
+                        lines[row - 1] = "";
+                        var studentSeat = row - 2;
+                        coachList.forEach((coach) => { 
+                            var studentId = coach.scoreSheet.studentPlacement[studentSeat - 1];
+                            if (studentId == "empty") { studentId = 0; }
+                            lines[row - 1] += ",," + studentId;
+                            for (var k = 0; k < 10; k++) { 
+                                lines[row - 1] += "," + coach.scoreSheet.scores[studentSeat - 1][k];
+                            }
+                        });
+                    }
+                    lines[12] = ""; // row 13 is blank
+                    coachList.forEach((coach) => { 
+                        lines[12] += ",".repeat(12);
+                    });
+                }
+                for (var row = 14; row < 14 + maxNumberStudents; row++) { 
+                    lines[row - 1] = "";
+                    var stId = row - 13;
+                    coachList.forEach((coach) => { 
+                        var nextCoach = "";
+                        if (coach.students.length >= stId) {
+                            var student = coach.students[stId - 1];
+                            nextCoach += "," + student.first + "," +
+                                    student.middle + "," + 
+                                    student.last + ",".repeat(9);
+                        } else {
+                            nextCoach += ",".repeat(12);
+                        }
+                        lines[row - 1] += nextCoach;
+                    });
+                }
+                var CSVFile = "./public/CSVContestResult.txt"
+                var CSVFileContent = "";
+                lines.forEach((line) => { 
+                    CSVFileContent += line + "\n";
+                });
+                fs.writeFile(CSVFile, CSVFileContent, (err) => {
+                    if (err) {
+                        console.log("Error writing file. Error message follows.");
+                        console.log(err);
+                        return;
+                    } else {
+                        res.download(CSVFile, "yyyy contest " + status.contestNumber + ".csv", (err) => {
+                            if (err) {
+                                console.log("contest download error: ", err);
+                                console.log("headersSent: ", Object.keys(res._headerSent));
+                            } else {
+                                console.log("The contest file was sent to the statistician for download.")
+                            }
+                        });
+                    }
+                })
+                return;
+            case "downloadBackup":
+                var JSONFile = "./public/JSONBackup.json";
+                var backupJSON = '{"doCoaches":'+JSON.stringify(doCoaches)+',"doStatus":'+JSON.stringify(doStatus)+"}";
+                fs.writeFile (JSONFile, backupJSON, (err) => { 
+                    if (err) {
+                        console.log("backupJSON writeFile error: ", err);
+                    } else {
+                        res.download(JSONFile, "yymmdd backup.json", (err) => {
+                            if (err) {
+                                console.log("backup.json download error: ", err);
+                                console.log("headersSent: ", Object.keys(res._headerSent));
+                            } else {
+                                console.log("The backup file was sent to the statistician for download.")
+                            }
+                        });
+                    }
+                });
+                return;
+            case "restoreBackup":
+                if (isJSONString(req.body.backupJSON)) {
+                    var backedUpObject = JSON.parse(req.body.backupJSON);
+                    doStatus = backedUpObject.doStatus;
+                    status = dObjectRead("status");
+                    doCoaches = backedUpObject.doCoaches;
+                    doCoaches.forEach((coach) => { 
+                        coach.place = "TBD";
+                    });
+                    coachList = [];
+                    for (var j = 1; j <= status.maximumCoachId; j++) {
+                        coachList.push(dObjectRead("coach", j));
+                    }
+                    coachList.forEach((coach) => {
+                        addFullName(coach);
+                    });
+                }
+                break;
             case "cleanDeleted":
                 coachList.forEach((coach) => {
                     let deleteIndices = [];
@@ -768,9 +763,32 @@ app.post("/statistician", (req, res) => {
                     for (var j = deleteIndices.length - 1; j >= 0; j--) {
                         coach.students.splice(deleteIndices[j], 1);
                     }
-                    dBaseWrite("coach", coach);
+                    dObjectWrite("coach", coach);
                 });
                 break;
+            case "restartLogFile":
+                console.log(`logPath: ${logPath}`);
+                console.log(`filename: ${logPath.slice(6)}`);
+                res.download(logPath, logPath.slice(6), (err) => {
+                    if (err) {
+                        console.log("Error downloading log file: ", err);
+                    } else {
+                        fs.unlink(logPath, (err) => {
+                            if (err) {
+                                console.error('Error deleting file:', err);
+                            } else {
+                                console.log('File deleted successfully!');
+                                dateNow = new Date();
+                                timeNow = dateNow.getHours() + '-' + dateNow.getMinutes();
+                                logPath = "./logs/" + dateNow.toDateString() + ' -' + ' Start Time - ' + timeNow + ".log";
+                                consoleLogToFile({
+                                    logFilePath: logPath,
+                                })
+                            }
+                        });
+                    }
+                });
+                return;
             default:
                 console.log("statistician.ejs returned an unrecognized requestType of ", req.body.requestType);
         }
@@ -781,6 +799,7 @@ app.post("/statistician", (req, res) => {
             coachList: coachList,
             alphaSchools: alphaSchools,
             session: statistician.session,
+            announcements: announcements,
         });
     } else {
         console.log(`Statistician: session was terminated by server`)
@@ -789,15 +808,15 @@ app.post("/statistician", (req, res) => {
 });
 
 app.post("/manageTeams", (req, res) => {
-    var statistician = dBaseRead("statistician");
+    var statistician = dObjectRead("statistician");
     var editTeam = "none";
     console.log(`statistician: Request ${req.body.requestType}`);
     if (statistician.session == req.body.session) {
         req.body.summerMode = req.body.summerMode || false;
-        var status = dBaseRead("status");
+        var status = dObjectRead("status");
         var coachList = [];
         for (var j = 1; j <= status.maximumCoachId; j++) {
-            coachList.push(dBaseRead("coach", j));
+            coachList.push(dObjectRead("coach", j));
         }
         coachList.forEach((coach) => {
             addFullName(coach);
@@ -831,7 +850,7 @@ app.post("/manageTeams", (req, res) => {
                             coach.students.splice(j, 1);
                         }
                     };
-                    dBaseWrite("coach", coach);
+                    dObjectWrite("coach", coach);
                 });
                 break;
             case "editTeam":
@@ -844,24 +863,25 @@ app.post("/manageTeams", (req, res) => {
                 coachList[idx].last = req.body.coachLast;
                 coachList[idx].school = req.body.coachSchool;
                 addFullName(coachList[idx]);
-                dBaseWrite("coach", coachList[idx]);
+                dObjectWrite("coach", coachList[idx]);
                 break;
             case "deleteTeam":
                 for (var j = coachId; j < status.maximumCoachId; j++) {
-                    var idx1 = j - 1;
-                    var idx2 = j;
+                    var idx1 = j - 1; // Recall that the array index is one less than the coach ID
+                    var idx2 = j; // idx2 is the index of the coach that is being copied downward
                     coachList[idx1] = coachList[idx2];
-                    coachList[idx1].iD = idx2;
-                    dBaseWrite("coach", coachList[idx1]);
+                    coachList[idx1].iD = idx2; // alternatively, coachList[idx1].iD = idx1+1;
+                    dObjectWrite("coach", coachList[idx1]);
                     addFullName(coachList[idx1]);
                 }
-                coachList=coachList.slice(0, -1);
+                coachList = coachList.slice(0, -1); 
+                doCoaches = doCoaches.slice(0, -1);
                 status.maximumCoachId = status.maximumCoachId - 1;
-                dBaseWrite("status", status);
+                dObjectWrite("status", status);
                 break;
             case "addTeam":
-                var newTeam = new DbCoachRecord("new", req.body.coachFirst, req.body.coachMiddle, req.body.coachLast, req.body.coachSchool);
-                dBaseWrite("coach", newTeam);
+                var newTeam = new DoCoachRecord("new", req.body.coachFirst, req.body.coachMiddle, req.body.coachLast, req.body.coachSchool);
+                dObjectWrite("coach", newTeam); // When coach.iD = "new" then dObjectWrite knows to add this coach to the end of the data object.
                 addFullName(newTeam);
                 coachList.push(newTeam);
                 break;
@@ -882,7 +902,7 @@ app.post("/manageTeams", (req, res) => {
 });
 
 app.post("/statisticianroster", (req, res) => { 
-    var statistician = dBaseRead("statistician");
+    var statistician = dObjectRead("statistician");
     console.log(`statistician: Request ${req.body.requestType}`);
     if (statistician.session == req.body.session) { 
         var coachId = req.body.coachId; // This value is null if the post call was made by manageteams.ejs. See the "manageRoster" handling below.
@@ -899,7 +919,7 @@ app.post("/statisticianroster", (req, res) => {
             studentId = req.body.requestType.slice(13);
             req.body.requestType = "updateStudent";
         }
-        var coach = dBaseRead("coach", coachId);
+        var coach = dObjectRead("coach", coachId);
         addFullName(coach);
         var alphaStudents = makeAlphaStudentsList(coach);
         switch (req.body.requestType) {
@@ -914,7 +934,7 @@ app.post("/statisticianroster", (req, res) => {
                 coach.students[idx].first = req.body.first;
                 coach.students[idx].middle = req.body.middle;
                 coach.students[idx].last = req.body.last;
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 studentId = "none"; // This tells statisticianroster.ejs to not change any student list items into a form.
                 var alphaStudents = makeAlphaStudentsList(coach); // This will take care of adding the fullName key to the modified student.
                 break;
@@ -926,12 +946,12 @@ app.post("/statisticianroster", (req, res) => {
                     last: req.body.last,
                     iD: newId,
                 });
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 var alphaStudents = makeAlphaStudentsList(coach); // This will take care of adding the fullName key to the added student.
                 break;
             case "passWordReset":
                 coach.passWord = "CJML";
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 break;
             default:
         }
@@ -948,16 +968,16 @@ app.post("/statisticianroster", (req, res) => {
 });
 
 app.post("/coach", (req, res)=>{ 
-    var coach = dBaseRead("coach", req.body.coachId);
-    var currentStatus = dBaseRead("status");
+    var coach = dObjectRead("coach", req.body.coachId);
+    var currentStatus = dObjectRead("status");
     var state = "readOnly";
     var numAddedStuds = 0; // Used to keep track of how many name "add student" requests have been made so far.
                             // These students are temporarily named with a numeric suffix, as in " Student3".
     var displayShiftWarning = ""; // This is not currently used, but will be in a future version.
-    var duplicates = false; // Used when scorecard names are submitted, to determine whether to accept the submission.
+    var duplicates = false; // Used when scoresheet names are submitted, to determine whether to accept the submission.
     var namesLockedMsg = false; // Tells whether to display the warning that names are locked.
     var scoresLockedMsg = false; // Tells whether to display the warning that scores are locked.
-    var coachScoreCardStudentPlacement = coach.scoreCard.studentPlacement;
+    var coachScoreSheetStudentPlacement = coach.scoreSheet.studentPlacement;
     var editTeam = false; //Tells whether to put the team name and coach name in editable text fields.
     addFullName(coach);
     console.log(`${coach.iD}: Request ${req.body.requestType}`);
@@ -986,7 +1006,7 @@ app.post("/coach", (req, res)=>{
             case "submitNames":
                 if (coach.permission.nameEntry) {
                     var emptySpaceFound = false;
-                    var tempCoachScoreCardStudentPlacement = [ // record student placements in a temporary array
+                    var tempCoachScoreSheetStudentPlacement = [ // record student placements in a temporary array
                         req.body.selectStudent0,
                         req.body.selectStudent1,
                         req.body.selectStudent2,
@@ -1001,7 +1021,7 @@ app.post("/coach", (req, res)=>{
                     numAddedStuds = req.body.numAddedStuds;
                     var listLength = coach.students.length;
                     for (var j = 0; j < 10; j++) {
-                        if (tempCoachScoreCardStudentPlacement[j] == "addStudent") {
+                        if (tempCoachScoreSheetStudentPlacement[j] == "addStudent") {
                             numAddedStuds++;
                             var newId = listLength + numAddedStuds;
                             coach.students.push(
@@ -1012,20 +1032,20 @@ app.post("/coach", (req, res)=>{
                                     iD: newId,
                                 }
                             );
-                            tempCoachScoreCardStudentPlacement[j] = newId;
+                            tempCoachScoreSheetStudentPlacement[j] = newId;
                         }
                     }
-                    // Before checking for duplicates on the scorecard, update the list of students in the database.
-                    dBaseWrite("coach", coach);
-                    // Check that the list of students on the scorecard is "clean" and if so finish updating the database.
-                    if (isClean(tempCoachScoreCardStudentPlacement)) { // come here when there is no student listed multiple times.
-                        var packedArray = fillSpaces(tempCoachScoreCardStudentPlacement, coach.scoreCard.scores);
-                        coach.scoreCard.studentPlacement = packedArray.studentArray;
-                        coach.scoreCard.scores = packedArray.scoreArray;
+                    // Before checking for duplicates on the scoresheet, update the list of students in the data object.
+                    dObjectWrite("coach", coach);
+                    // Check that the list of students on the scoresheet is "clean" and if so finish updating the data object.
+                    if (isClean(tempCoachScoreSheetStudentPlacement)) { // come here when there is no student listed multiple times.
+                        var packedArray = fillSpaces(tempCoachScoreSheetStudentPlacement, coach.scoreSheet.scores);
+                        coach.scoreSheet.studentPlacement = packedArray.studentArray;
+                        coach.scoreSheet.scores = packedArray.scoreArray;
                         emptySpaceFound = packedArray.fillingHappened;
-                        coach.scoreCard.nameEntry = true;
-                        dBaseWrite("coach", coach); // update the database
-                        coachScoreCardStudentPlacement = coach.scoreCard.studentPlacement;
+                        coach.scoreSheet.studentsEntered = true;
+                        dObjectWrite("coach", coach); // update the data object
+                        coachScoreSheetStudentPlacement = coach.scoreSheet.studentPlacement;
                         displayShiftWarning = emptySpaceFound; // will be used in a future version
                         if (numAddedStuds == 0) {
                             state = "readOnly";
@@ -1047,7 +1067,7 @@ app.post("/coach", (req, res)=>{
                     } else { // Come here when there is at least one student listed multiple times.
                         state = "enterNames";
                         duplicates = true;
-                        coachScoreCardStudentPlacement = tempCoachScoreCardStudentPlacement;
+                        coachScoreSheetStudentPlacement = tempCoachScoreSheetStudentPlacement;
                     }
                 } else {
                     console.log(`${coach.iD}: Deny permission to submit names`); // come here when the coach is refused permission to submit names.
@@ -1068,11 +1088,11 @@ app.post("/coach", (req, res)=>{
                 if (coach.permission.scoreEntry) {
                     for (var k = 0; k < 10; k++) {
                         for (var j = 0; j < 10; j++) {
-                            coach.scoreCard.scores[k][j] = req.body["scoreArray" + k + j];
+                            coach.scoreSheet.scores[k][j] = req.body["scoreArray" + k + j];
                         }
                     }
-                    coach.scoreCard.scoreEntry = true;
-                    dBaseWrite("coach", coach, coach.iD); // update the database
+                    coach.scoreSheet.scoresEntered = true;
+                    dObjectWrite("coach", coach, coach.iD); // update the data object
                     state = "readOnly";
                 } else {
                     console.log(`${coach.iD}: Deny permission to submit scores`); // come here when the coach is refused permission to submit scores.
@@ -1080,7 +1100,7 @@ app.post("/coach", (req, res)=>{
                     scoresLockedMsg = true;
                 }
                 break;
-            case "newStudents": // Come here when the rosteredit page handles "Add Student" selections on the scorecard.
+            case "newStudents": // Come here when the rosteredit page handles "Add Student" selections on the scoresheet.
                 for (var j = 1; j <= req.body.numAddedStuds; j++) { //This is the final use of numAddedStuds. It remains reset to zero after this line.
                     var idx = coach.students.findIndex((student) => {
                         return (student.iD == req.body["studentId" + j]);
@@ -1089,8 +1109,8 @@ app.post("/coach", (req, res)=>{
                     coach.students[idx].middle = req.body["middle" + j];
                     coach.students[idx].last = req.body["last" + j];
                 }
-                dBaseWrite("coach", coach);
-                var currentStatus = dBaseRead("status");
+                dObjectWrite("coach", coach);
+                var currentStatus = dObjectRead("status");
                 var alphaStudents = makeAlphaStudentsList(coach);
                 state = "readOnly";
                 break;
@@ -1121,7 +1141,7 @@ app.post("/coach", (req, res)=>{
                     return;
                 } else {
                     coach.passWord = req.body.firstEntry;
-                    dBaseWrite("coach", coach);
+                    dObjectWrite("coach", coach);
                     break;
                 }
             case "editTeam":
@@ -1132,9 +1152,97 @@ app.post("/coach", (req, res)=>{
                 coach.middle = req.body.coachMiddle;
                 coach.last = req.body.coachLast;
                 coach.school = req.body.coachSchool;
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 addFullName(coach);
                 break;
+            case "downloadScoresheet":
+                var lines = [];
+                var status = dObjectRead("status");
+                lines[0] = ",,,Central Jersey Math League" + ",".repeat(10);
+                lines[1] = ",,," + coach.school + " Score Sheet" + ",".repeat(10);
+                lines[2] = ",".repeat(13); // row 3 is empty
+                lines[3] = "Coach,,,Venue,,,,Date,,Contest No,,,,";
+                lines[4] = coach.fullName + ",,," + status.hostSchool + ",".repeat(4) + status.contestDate + ",," + status.contestNumber + ",".repeat(4);
+                lines[5] = lines[2]; // row 6 is empty
+                if (!(status.teamContest)) { 
+                    lines[6] = ",,Question No.:,1,2,3,4,5,6,7,8,9,10,Scores";
+                    lines[7] = ",Lastname,First [Middle]" + ",".repeat(11);
+                    var varsityScores = [];
+                    for (var row = 9; row < 14; row++){
+                        var studentSeat = row - 8;
+                        lines[row - 1] = studentSeat + ":,";
+                        if (coach.scoreSheet.studentPlacement[studentSeat - 1] == "empty") {
+                            lines[row - 1] += ",";
+                        } else {
+                            var student = coach.students[coach.scoreSheet.studentPlacement[studentSeat - 1] - 1];
+                            lines[row - 1] += student.last + "," + student.first;
+                            if (student.middle != "") {
+                                lines[row - 1] += student.middle;
+                            }
+                        }
+                        for (var k = 0; k < 10; k++) {
+                            lines[row - 1] += "," + coach.scoreSheet.scores[studentSeat - 1][k];
+                        }
+                        var varsityScore = sumTen(coach.scoreSheet.scores[studentSeat - 1]);
+                        varsityScores.push(varsityScore);
+                        lines[row - 1] += "," + varsityScore;
+                    }
+                    lines[13] = "Varsity:" + ",".repeat(13); // row 14 contains only the varsity team score. Question columns are not summed.
+                    lines[13] += sumTopThree(varsityScores);
+                    var JVScores = [];
+                    for (var row = 15; row < 20; row++){
+                        var studentSeat = row - 9;
+                        lines[row - 1] = studentSeat + ":,";
+                        if (coach.scoreSheet.studentPlacement[studentSeat - 1] == "empty") {
+                            lines[row - 1] += ",";
+                        } else {
+                            var student = coach.students[coach.scoreSheet.studentPlacement[studentSeat - 1] - 1];
+                            lines[row - 1] += student.last + "," + student.first;
+                            if (student.middle != "") {
+                                lines[row - 1] += student.middle;
+                            }
+                        }
+                        for (var k = 0; k < 10; k++) {
+                            lines[row - 1] += "," + coach.scoreSheet.scores[studentSeat - 1][k];
+                        }
+                        var JVScore = sumTen(coach.scoreSheet.scores[studentSeat - 1]);
+                        JVScores.push(JVScore);
+                        lines[row - 1] += "," + JVScore;
+                    }
+                    lines[19] = "JV:" + ",".repeat(13); // row 14 contains only the varsity team score. Question columns are not summed.
+                    lines[19] += sumTopThree(JVScores);
+                } else { 
+                    lines[6] = ",,Question No.:,1,2,3,4,5,6,7,8,9,10,Score";
+                    lines[7] = ",".repeat(13);
+                    lines[8] = ",,Team Scores: "
+                    for (var k = 0; k < 10; k++) {
+                        lines[8] += "," + coach.scoreSheet.scores[0][k];
+                    }
+                    var teamScore = sumTen(coach.scoreSheet.scores[0]);
+                    lines[8] += "," + teamScore;
+                }
+                var CSVFile = "./public/scoreSheet-"+coach.iD+".txt"
+                var CSVFileContent = "";
+                lines.forEach((line) => { 
+                    CSVFileContent += line + "\n";
+                });
+                fs.writeFile(CSVFile, CSVFileContent, (err) => {
+                    if (err) {
+                        console.log("Error writing file. Error message follows.");
+                        console.log(err);
+                        return;
+                    } else {
+                        res.download(CSVFile, "CJMLscoresheet" + status.contestNumber + ".csv", (err) => {
+                            if (err) {
+                                console.log("contest download error: ", err);
+                                console.log("headersSent: ", Object.keys(res._headerSent));
+                            } else {
+                                console.log(`The scoresheet file was sent to coach ${coach.iD} for download.`)
+                            }
+                        });
+                    }
+                })
+                return;
             default:
                 console.log('post("/coach"...): Unrecognized requestType of ', req.body.requestType);
         }
@@ -1146,8 +1254,8 @@ app.post("/coach", (req, res)=>{
             coachSchool : coach.school,
             alphaStudents : alphaStudents,
             numAddedStuds : numAddedStuds,
-            coachScoreCardStudentPlacement : coachScoreCardStudentPlacement, // !=coach.scoreCard.StudentPlacement when duplicates==true
-            coachScoreCardScores : coach.scoreCard.scores,
+            coachScoreSheetStudentPlacement : coachScoreSheetStudentPlacement, // !=coach.scoreSheet.StudentPlacement when duplicates==true
+            coachScoreSheetScores : coach.scoreSheet.scores,
             session : coach.session,
             displayShiftWarning : displayShiftWarning, // Not currently used. Do I need to warn coach that a shift has been made?
             duplicates : duplicates, //flag to turn on the red error lines
@@ -1158,6 +1266,7 @@ app.post("/coach", (req, res)=>{
             currentStatusContestNumber: currentStatus.contestNumber,
             currentStatusTeamContest: currentStatus.teamContest,
             editTeam: editTeam,
+            place: coach.place,
             coachFirst: coach.first,
             coachMiddle: coach.middle,
             coachLast: coach.last,
@@ -1170,7 +1279,7 @@ app.post("/coach", (req, res)=>{
 
 
 app.post("/roster", (req, res) => {
-    var coach=dBaseRead("coach",req.body.coachId);
+    var coach=dObjectRead("coach",req.body.coachId);
     console.log(`${coach.iD}: Request to manage the roster`);
     if (coach.session == req.body.session) {
         if (req.body.requestType.startsWith("deleteStudent")) {
@@ -1185,7 +1294,7 @@ app.post("/roster", (req, res) => {
                     return (student.iD == dStudentId);
                 });
                 coach.students[idx].last = "!" + coach.students[idx].last;
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 break;
             case "changeStudent":
                 var cStudentId = req.body.studentId1;
@@ -1195,7 +1304,7 @@ app.post("/roster", (req, res) => {
                 coach.students[idx].first = req.body.first1;
                 coach.students[idx].middle = req.body.middle1;
                 coach.students[idx].last = req.body.last1;
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 break;
             default:
         }
@@ -1213,8 +1322,8 @@ app.post("/roster", (req, res) => {
 });
 
 app.post("/rosteredit", (req, res) => {
-    var coach=dBaseRead("coach",req.body.coachId);
-    var currentStatus = dBaseRead("status");
+    var coach=dObjectRead("coach",req.body.coachId);
+    var currentStatus = dObjectRead("status");
     console.log(`${coach.iD}: Request ${req.body.requestType}`);
     if (coach.session == req.body.session) { 
         if (req.body.requestType.startsWith("editStudent")) {
@@ -1232,7 +1341,7 @@ app.post("/rosteredit", (req, res) => {
                         iD: editId,
                     }
                 );
-                dBaseWrite("coach", coach);
+                dObjectWrite("coach", coach);
                 break;
             case "editStudent": // The work of "editStudent" was done above, when the value of editId was set.
                 break;
@@ -1245,17 +1354,18 @@ app.post("/rosteredit", (req, res) => {
                     coachFullName: coach.fullName,
                     coachSchool: coach.school,
                     alphaStudents: alphaStudents,
-                    coachScoreCardStudentPlacement: coach.scoreCard.studentPlacement,
-                    coachScoreCardScores: coach.scoreCard.scores,
+                    coachScoreSheetStudentPlacement: coach.scoreSheet.studentPlacement,
+                    coachScoreSheetScores: coach.scoreSheet.scores,
                     session: coach.session,
                     currentStatusHostSchool: currentStatus.hostSchool,
                     currentStatusContestDate: currentStatus.contestDate,
                     currentStatusContestNumber: currentStatus.contestNumber,
                     currentStatusTeamContest: currentStatus.teamContest,
                     editTeam: false,
-                    // coachFirst: "",
-                    // coachMiddle: "",
-                    // coachLast: "",
+                    place: coach.place,
+                    coachFirst: "",
+                    coachMiddle: "",
+                    coachLast: "",
                 });
                 return;
         }
@@ -1276,7 +1386,7 @@ app.post("/rosteredit", (req, res) => {
 });
 
 app.post("/rosterundelete", (req, res) => { 
-    var coach=dBaseRead("coach",req.body.coachId);
+    var coach=dObjectRead("coach",req.body.coachId);
     if (coach.session == req.body.session) { 
         if (req.body.requestType.startsWith("unDeleteStudent")) {
             var unDeleteId = req.body.requestType.slice(15);
@@ -1284,7 +1394,7 @@ app.post("/rosterundelete", (req, res) => {
                 return element.iD == unDeleteId;
             });
             coach.students[unDeleteIdx].last = coach.students[unDeleteIdx].last.slice(1); // Undelete by removing the starting "!" from last name
-            dBaseWrite("coach", coach); // The student list has been updated, now continue with a render of the rosterundelete page again.
+            dObjectWrite("coach", coach); // The student list has been updated, now continue with a render of the rosterundelete page again.
         }
         // skip to here when requestType is "undelete"
         var alphaStudents = makeAlphaStudentsList(coach);

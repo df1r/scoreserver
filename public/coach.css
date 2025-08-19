@@ -55,22 +55,40 @@ h2 {
     left: 5%;
 }
 
-.oleftbutton2 {
+.omiddlebutton {
     width: 15%;
     position: absolute;
-    left: 30%;
-}
-
-.orightbutton2 {
-    width: 15%;
-    position: absolute;
-    left: 55%
+    left: 45%;
 }
 
 .orightbutton {
     width: 15%;
     position: absolute;
     left: 80%
+}
+
+/* .orightbutton {
+    width: 15%;
+    position: absolute;
+    left: 80%
+} */
+
+button {
+    background-color: rgb(240, 51, 51);
+    color: white;
+    border-radius: 4px;
+}
+
+button:disabled {
+    opacity: 0.5;
+}
+
+button:active {
+    background-color: rgb(152, 26, 26);
+}
+
+#downloadScoresheet {
+    font-size: 24pt;
 }
 
 #viewwindow {
@@ -273,6 +291,7 @@ em {
     width: 100%;
     height: 0.9cm;
     border: none;
+    border-radius: 0px;
     font-size: 16pt;
     /* background-color: #8bcf029e; */
     text-align: center;
@@ -381,4 +400,8 @@ tfoot td {
 
 .namesColumn {
     width: 33%;
+}
+
+.smallPrint {
+    font-size: 10pt;
 }

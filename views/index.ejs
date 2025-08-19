@@ -7,6 +7,13 @@
     <link rel="stylesheet" href="/coach.css">
 </head>
 <body>
+    <h1>Central Jersey Math League</h1>
+    <h2>Coaches can log in below for contest <%=status.contestNumber%></h2>
+    <br />
+    <h3>Venue: <%=status.hostSchool%>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Date: <%=status.contestDate%></h3>
+    <br />
+    <br />
+    <br />
         <form action="/", method = "POST">
             <select name="coachId" required autofocus >
                 <option value="">Choose your School</option>
@@ -26,9 +33,9 @@
             );</script>
     <%}%>
     <% if (arrivalMsg == "loggedout") { %>
-        <script>alert(
+        <!-- <script>alert(
             "Your session has ended."
-            );</script>
+            );</script> -->
     <%}%>
     <% if (arrivalMsg == "wrongpwd") { %>
         <script>alert(

@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="/statistician.css">
 </head>
 <body>
-
     <div id="wholepage">
         <div id="pagetitle">
             <h1>CJML Statistician Console</h1>
@@ -20,7 +19,7 @@
 
         <div id="sidebyside">
             <div id="leftside" class="boxed">
-                <div id="contestinfo">
+                <div id="contestinfo" class="boxed">
                     <form action="/manageTeams" method="POST" id="manageTeamsForm">
                         <input type="checkbox" class="invisible" checked="checked"
                             name="session" value="<%=session%>" />
@@ -34,7 +33,7 @@
                                     Contest 
                                     <input type="text" maxlength="1" size="1" required
                                         name="contestNumber" value="<%=status.contestNumber%>" />&nbsp;
-                                    <input type="text" maxlength="12" size="12" required
+                                    <input type="text" maxlength="10" size="10" required
                                         name="contestDate" value="<%=status.contestDate%>" />
                                     <input type="checkbox" name="teamContest" id="forTeamContest" value="true">
                                     <label for="forTeamContest">Team Contest</label>
@@ -65,6 +64,9 @@
                         <%}%>
                     </form>
                 </div>
+                <br />
+                <br />
+                <br />
                 <div id="fourbuttons">
                     <div>
                         <button type="submit" form="statform" 
@@ -80,14 +82,79 @@
                             Manage Teams
                         </button>
                     </div>
+                    <%if(state == "showAnnouncements"){%>  <!-- also if statistician.js code adds/removes classes appropriately -->
+                        <div>
+                            <button id="endContest" class="invisible">
+                                End Contest
+                            </button>
+                        </div>
+                        <div class="inline boxed margined" id="endingButtons">
+                            <button type="submit" id="rankings" form="statform"
+                                    name="requestType" value="computeRanking">
+                                Send place values to scoresheets
+                            </button>
+                            <button type="submit" id="downPaste" form="statform"
+                                    name="requestType" value="downloadPasteable">
+                                Download contest data
+                            </button>
+                            <button type="submit" id="downBack" form="statform"
+                                    name="requestType" value="downloadBackup">
+                                Download backup data
+                            </button>
+                            <button id="finishEndingContest">
+                                Done
+                            </button>
+                        </div>
+                    <%} else {%>
+                        <div>
+                            <button id="endContest">
+                                End Contest
+                            </button>
+                        </div>
+                        <div class="inline margined" id="endingButtons">
+                            <button type="submit" id="rankings" class="invisible" form="statform"
+                                    name="requestType" value="computeRanking">
+                                Send place values to scoresheets
+                            </button>
+                            <button type="submit" id="downPaste" class="invisible" form="statform"
+                                    name="requestType" value="downloadPasteable">
+                                Download contest data
+                            </button>
+                            <button type="submit" id="downBack" class="invisible" form="statform"
+                                    name="requestType" value="downloadBackup">
+                                Download backup data
+                            </button>
+                            <button class="invisible" id="finishEndingContest">
+                                Done
+                            </button>
+                        </div>
+                    <%}%>
                     <div>
-                        <button>Get Spreadsheet</button>
+                        <button type="button" id="restoreReqButton">
+                            Restore from Backup
+                        </button>
+                        <form action="/statistician" method="POST">
+                            <input type="checkbox" class="invisible" checked="checked"
+                                    name="session" value="<%=session%>" />
+                            <input type="text" id="restoreCoachTextField" class="invisible" placeholder="Paste JSON string here."
+                                    name="backupJSON" autocomplete="off"/>
+                            <button type="submit" id="restoreButton" class="invisible"
+                                    name="requestType" value="restoreBackup">Restore</button>
+                        </form>
+                    </div>
+                    <div>
+                        <button type = "submit" form="statform"
+                                name="requestType" value="restartLogFile">
+                            Restart log file (download and delete former log file)
+                        </button>
                     </div>
                     <div>
                         <a href="/?arrivedFrom=loggedout"><button>Logout</button></a>
                     </div>
-                    </div>
-
+                </div>
+                <button type="submit" id="downBackAuto" class="invisible" form="statform" name="requestType" value="downloadBackup">
+                    Download backup data
+                </button>
             </div>
             <div id="rightside">
                 <form action="/statistician" method="POST" id="rightsideform">
@@ -139,22 +206,36 @@
                                             </button>
                                         </td>
                                         <td class="tdnarrow"><img src="/images/check.png" alt="check" width="40%" 
-                                            <%if(!(coachList[idx].scoreCard.nameEntry)){%> class="invisible" <%}%>>
+                                            <%if(!(coachList[idx].scoreSheet.studentsEntered)){%> class="invisible" <%}%>>
                                         </td>
                                         <td class="tdnarrow"><img src="/images/check.png" alt="check" width="40%" 
-                                            <%if(!(coachList[idx].scoreCard.scoreEntry)){%> class="invisible" <%}%>>
+                                            <%if(!(coachList[idx].scoreSheet.scoresEntered)){%> class="invisible" <%}%>>
                                         </td>
                                     </tr>
                                 <%});%>
                             </tbody>
                         </table>
                     </div>
+                    <button type="submit" name="requestType" value="readOnly">
+                        refresh table
+                    </button>
                 </form>
-            <button type="submit" form="rightsideform" 
-                name="requestType" value="readOnly">
-                refresh table
-            </button>
+                <% if (announcements){%>
+                    <div class="boxed">
+                        <h2>
+                            Highest-Scoring Teams:
+                        </h2>
+                        <h3 class="announcements"><%=announcements.firstPlace%></h3>
+                        <h3 class="announcements"><%=announcements.secondPlace%></h3>
+                        <h3 class="announcements"><%=announcements.thirdPlace%></h3>
+                        <%if(!(status.teamContes)){%>
+                            <h2>The individual high score of <%=announcements.highScore%> was achieved by:</h2>
+                            <h3 class="announcements"><%=announcements.highScorers%></h3>
+                        <%}%>
+                    </div>
+                <%}%>
+            </div>
         </div>
-    </div>
+    <script src="statistician.js"></script>
 </body>
 </html>

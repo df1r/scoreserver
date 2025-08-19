@@ -13,12 +13,19 @@ and to see who has entered data yet (functionality only, see step 9) DONE
 12. Make Administrator function to clear out a contest and set up the next contest
 8. Give the administrator the option of turning on the team-contest mode. Write the corresponding code in coach.ejs.
 
+Lose the log-out message
+add the "place" computation
+"enter" scores and names should be "edit" instead. But not "edit names". Maybe "edit scorecard names?"
+Get rid of button bar on bottom, and replace it with buttons on the top.
+CSS-Make a custom button for the site.
+
 11. Find a way to send the server data to a Google Sheet (Google API?)
 13. Deliver a score sheet to the coach--What file format will it be? Mary Kay's idea about giving raw data to play with
 **************************************************Validate and deploy by 1 Sep, 2025
 9. Review the existing CSS and extend the CSS to the other three pages (login, 
 admin, roster management), making a common color and font and button scheme and using the same header and footer.
-7. database work--cancelled
+7. Connect the server to a database and rewrite the database read and write routines
+(Before connecting the railway server, make a server.json file and install the config package. dbPassWord = config.get("db.passWord");)
 10. Research https and good security practices
 
 Optional
@@ -28,11 +35,12 @@ Error-handling improvements -->
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title><%=coachSchool%> score sheet</title>
+        <title><%=coachSchool%> score card</title>
         <link rel="stylesheet" href="/coach.css">
     </head>
     <body>
         <div id="oheader">
+            <p>page header with links</p>
             <a href="/?arrivedFrom=loggedout"><button>logout</button></a>
         </div>
         <br />
@@ -124,68 +132,38 @@ Error-handling improvements -->
         <div class="obuttonbar">
             <%if(currentStatusTeamContest){%>
                 <p>&nbsp;</p>
-            <%} else {
-                if(state=="enterNames" ){%>
-                    <div class="oleftbutton">
-                        <button type="submit" form="namesForm" 
-                                    name="requestType" value="submitNames">
-                            Submit Names
-                        </button>
-                        <button type="submit" form="mainForm" name="requestType" value="readOnly">
-                            Cancel
-                        </button>
-                    </div>
-                <%} else {%>
-                    <button form="mainForm" type="submit" class="oleftbutton" 
-                                name="requestType" value="enterNames" 
-                                <%if(!(state=="readOnly")){%>disabled <%}%>>
-                        Edit Scoresheet Names
-                    </button>
-                <%}%>
-            <%}%>
-            <%if(state=="enterScores"){%>
-                <div class="omiddlebutton">
-                    <button type="submit" form="scoresForm" 
-                                name="requestType" value="submitScores">
-                        Submit Scores
-                    </button>
-                    <button type="submit" form="mainForm" 
-                                name="requestType" value="readOnly">
-                        Cancel
-                    </button>
-                </div>
             <%} else {%>
-                <button form="mainForm" type="submit" class="omiddlebutton" 
-                            name="requestType" value="enterScores" 
-                            <%if(!(state=="readOnly")){%> disabled <%}%>>
-                    Edit Scores
+                <button form="mainForm" type="submit" class="oleftbutton"
+                    name="requestType" value="enterNames"  
+                    <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
+                    Enter Names
                 </button>
             <%}%>
-            <button form="mainForm" type="submit" class="orightbutton"
-                <%if(state=="readOnly" ){%><%} else {%> disabled <%}%> 
+            <button form="mainForm" type="submit" class="oleftbutton2"
+                name="requestType" value="enterScores"  
+                <%if(state == "readOnly"){%> <%} else {%>disabled<%}%>>
+                Enter Scores
+            </button>
+            <button form="mainForm" type="submit" class="orightbutton2"
+                <%if(state=="readOnly" ){%><%} else {%> disabled<%}%> 
                 name="requestType" value="manageRoster">
                 Manage Roster
             </button>
             <br />
             <br />
+
         </div>
+
+
         <% if (locals.duplicates) {%>
             <p id="multipleerror">You must not enter the same student multiple times</p>
-        <%}%>
-        <% if (place != "TBD") {%>
-            <button type="submit" id="downloadScoresheet" form="mainForm" 
-                    name="requestType" value="downloadScoresheet">
-                Download Scoresheet Data
-            </button>
         <%}%>
         <div id="viewwindow">
             <div id="scoresheet">
                 <div class="headerline">
                     <h2 id="scoresheettitle">Central Jersey Math League</h2>
                     <div class="tbd">
-                        <button type="submit" form="mainForm" class="invisible" id="tbdButton"
-                            name="requestType" value="readOnly"></button>
-                        <label for="tbdButton">Place: <em class="r" id="teamrank"><%=place%></em></label>
+                        <p>Place: <em class="r" id="teamrank">TBD</em></p>
                     </div>
                 </div>
                 <div class="headerline"><h2><%=coachSchool%> Score Sheet</h2></div>
@@ -229,9 +207,9 @@ Error-handling improvements -->
                                     <td>
                                         <%var buttonName="scoreArray0" +j%>
                                         <input form="scoresForm" type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>"
-                                            value="<%=coachScoreSheetScores[0][j]%>" class="invisible">
+                                            value="<%=coachScoreCardScores[0][j]%>" class="invisible">
                                         <button type="button" <%if(state!="enterScores"){%> disabled <%}%> class="qbox click clickrow0" >
-                                                <%=coachScoreSheetScores[0][j]%>
+                                                <%=coachScoreCardScores[0][j]%>
                                         </button>
                                     </td>
                                 <%}%>
@@ -249,7 +227,7 @@ Error-handling improvements -->
                                             <option value="empty">Choose a student</option> 
                                             <%alphaStudents.forEach((student)=>{%>
                                                 <option value="<%=student.iD%>" 
-                                                    <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
+                                                    <%if(coachScoreCardStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
                                                         <%=student.fullName%>
                                                 </option> 
                                             <%}) %>
@@ -260,10 +238,10 @@ Error-handling improvements -->
                                         <td>
                                             <%var buttonName="scoreArray" +k+j%>
                                             <input form="scoresForm" type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>"
-                                                value="<%=coachScoreSheetScores[k][j]%>" class="invisible">
+                                                value="<%=coachScoreCardScores[k][j]%>" class="invisible">
                                             <button type="button" class="qbox click <%='clickrow' + k%>"
-                                                <%if((state!="enterScores" ) || (coachScoreSheetStudentPlacement[k]=="empty" )) {%>disabled <%}%>>
-                                                <%=coachScoreSheetScores[k][j]%>
+                                                <%if((state!="enterScores" ) || (coachScoreCardStudentPlacement[k]=="empty" )) {%>disabled<%}%>>
+                                                <%=coachScoreCardScores[k][j]%>
                                             </button>
                                         </td>
                                     <%}%>
@@ -286,11 +264,11 @@ Error-handling improvements -->
                                         <%=k+1%>
                                     </th>
                                     <td>
-                                        <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" <%if(state !="enterNames" ){%>disabled <%}%>>
+                                        <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" <%if(state !="enterNames" ){%>disabled<%}%>>
                                             <option value="empty">Choose a student</option>
                                             <%alphaStudents.forEach((student)=>{%>
                                                 <option value="<%=student.iD%>" 
-                                                    <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
+                                                    <%if(coachScoreCardStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
                                                         <%=student.fullName%>
                                                 </option>
                                             <%}) %>
@@ -301,10 +279,10 @@ Error-handling improvements -->
                                         <td>
                                             <%var buttonName="scoreArray" +k+j%>
                                             <input form="scoresForm" type="checkbox" checked="checked" id="<%=buttonName%>" name="<%=buttonName%>" 
-                                                value="<%=coachScoreSheetScores[k][j]%>" class="invisible">
+                                                value="<%=coachScoreCardScores[k][j]%>" class="invisible">
                                             <button type="button" class="qbox click <%='clickrow' + k%>"
-                                                <%if((state!="enterScores" ) || (coachScoreSheetStudentPlacement[k]=="empty" )) {%>disabled <%}%>>
-                                                <p><%=coachScoreSheetScores[k][j]%></p>
+                                                <%if((state!="enterScores" ) || (coachScoreCardStudentPlacement[k]=="empty" )) {%>disabled<%}%>>
+                                                <p><%=coachScoreCardScores[k][j]%></p>
                                             </button>
                                         </td>
                                     <%}%>
@@ -326,13 +304,38 @@ Error-handling improvements -->
                 </table>
             </div>
         </div>
-        <br />
-        <br />
-        <br />
-        <br />
-        <br />
+        <div class="obuttonbar">
+            <div class="horizontalchildren oleftbutton">
+                <%if(currentStatusTeamContest){%>
+                    <p>&nbsp;</p>
+                <%} else {%>
+                    <button type="submit" form="namesForm" <%if(state == "enterNames"){%> <%} else {%>disabled<%}%>
+                        name="requestType" value="submitNames">
+                        Submit Name Entry
+                    </button>
+                <%}%>
+                <%if(state == "enterNames") {%>
+                    <button type="submit" form="mainForm"
+                        name="requestType" value="readOnly">
+                        Cancel
+                    </button>
+                <%}%>
+            </div>
+            <div class="horizontalchildren orightbutton">
+                <button type="submit" form="scoresForm" <%if(state == "enterScores"){%> <%} else {%>disabled<%}%>
+                    name="requestType" value="submitScores">
+                    Submit Score Entry
+                </button>
+                <%if(state == "enterScores") {%>
+                    <button type="submit" form="mainForm"
+                        name="requestType" value="readOnly">
+                        Cancel
+                    </button>
+                <%}%>
+            </div>
+        </div>
         <div id="footer">
-            <p class="smallPrint">copyright 2025 Daniel M. Fishman</p>
+            <p>page footer with credits</p>
         </div>
         <%if(currentStatusTeamContest){%>
             <script src="coachTeamContest.js"></script>
