@@ -32,16 +32,16 @@
                                 <p>
                                     Contest 
                                     <input type="text" maxlength="1" size="1" required
-                                        name="contestNumber" value="<%=status.contestNumber%>" />&nbsp;
+                                        name="contestNumber" value="<%=contestStatus.contestNumber%>" />&nbsp;
                                     <input type="text" maxlength="10" size="10" required
-                                        name="contestDate" value="<%=status.contestDate%>" />
+                                        name="contestDate" value="<%=contestStatus.contestDate%>" />
                                     <input type="checkbox" name="teamContest" id="forTeamContest" value="true">
                                     <label for="forTeamContest">Team Contest</label>
                                 </p>
                             </div>
                             <p>
                                 <input type="text" required 
-                                    name="hostSchool" value="<%=status.hostSchool%>" />
+                                    name="hostSchool" value="<%=contestStatus.hostSchool%>" />
                             </p>
                             <div class="horizontalchildren">
                                 <button type="submit" name="requestType" value="submitVenue">
@@ -54,10 +54,10 @@
                             </div>
                         <%} else {%>
                             <div class="horizontalchildren">
-                                <p>Contest <%=status.contestNumber%>,&nbsp;<%=status.contestDate%></p>
-                                <p><%if(status.teamContest){%>Team contest<%} else {%> Regular contest<%}%></p>
+                                <p>Contest <%=contestStatus.contestNumber%>,&nbsp;<%=contestStatus.contestDate%></p>
+                                <p><%if(contestStatus.teamContest){%>Team contest<%} else {%> Regular contest<%}%></p>
                             </div>
-                            <p><%=status.hostSchool%></p>
+                            <p><%=contestStatus.hostSchool%></p>
                             <button type="submit" name="requestType" value="modifyVenue">
                                 Modify
                             </button>
@@ -67,7 +67,7 @@
                 <br />
                 <br />
                 <br />
-                <div id="fourbuttons">
+                <div id="controlButtons">
                     <div>
                         <button type="submit" form="statform" 
                             name="requestType" value="newContest"
@@ -138,14 +138,18 @@
                         <button type="button" id="restoreReqButton">
                             Restore from Backup
                         </button>
-                        <form action="/statistician" method="POST">
-                            <input type="checkbox" class="invisible" checked="checked"
+                        <form action="/restore" method="POST" id="restoreForm">
+                        </form>
+                            <input type="checkbox" class="invisible" checked="checked" form="restoreForm"
                                     name="session" value="<%=session%>" />
                             <input type="text" id="restoreCoachTextField" class="invisible" placeholder="Paste JSON string here."
-                                    name="backupJSON" autocomplete="off"/>
-                            <button type="submit" id="restoreButton" class="invisible"
-                                    name="requestType" value="restoreBackup">Restore</button>
-                        </form>
+                                    name="backupJSON" autocomplete="off" />
+                            <button type="button" id="restoreButton" class="invisible">Restore</button>
+                            <input type="checkbox" class="invisible" checked="checked" id="packetBodyHolder"
+                                    name="packetBody" value="" form="restoreForm">
+                            <button type="submit" id="packetSendButton" class="invisible"
+                                    name="packetStats" value="" form="restoreForm">
+                            </button>
                     </div>
                     <div>
                         <button type = "submit" form="statform"
@@ -157,16 +161,19 @@
                         <a href="/?arrivedFrom=loggedout"><button>Logout</button></a>
                     </div>
                 </div>
-                <button type="submit" id="downBackAuto" class="invisible" form="statform" name="requestType" value="downloadBackup">
-                    Download backup data
+                <button type="submit" id="downBackAuto" class="invisible" form="statform" 
+                        name="requestType" value="downloadBackup">
+                    Download backup data (this button is always invisible)
                 </button>
             </div>
             <div id="rightside">
+                <p  id="progressCounter" class="invisible">
+                </p>
                 <form action="/statistician" method="POST" id="rightsideform">
                     <input type="checkbox" class="invisible" checked="checked"
                         name="session" value="<%=session%>" />
                     <div id="contestcontrols", class="horizontalchildren">
-                        <%if(status.teamContest) {%>
+                        <%if(contestStatus.teamContest) {%>
                             <p>&nbsp;</p>
                         <%} else {%>
                             <button type="submit" name="requestType" value="openNames">
@@ -190,7 +197,7 @@
                                     <tr>
                                         <%var idx=coachList.findIndex((coach)=>{return(coach.iD == alphaSchool.coachId);});%>
                                         <td><%=coachList[idx].school%><br /><%=coachList[idx].fullName%></td>
-                                        <%if(!(status.teamContest)){%>
+                                        <%if(!(contestStatus.teamContest)){%>
                                             <td class="<%if(coachList[idx].permission.nameEntry){%>green <%}else{%>red <%}%>tdnarrow">
                                                 <label for="<%='names'+coachList[idx].iD%>">
                                                     Names<br />
@@ -233,7 +240,7 @@
                         <h3 class="announcements"><%=announcements.firstPlace%></h3>
                         <h3 class="announcements"><%=announcements.secondPlace%></h3>
                         <h3 class="announcements"><%=announcements.thirdPlace%></h3>
-                        <%if(!(status.teamContes)){%>
+                        <%if(!(contestStatus.teamContes)){%>
                             <h2>The individual high score of <%=announcements.highScore%> was achieved by:</h2>
                             <h3 class="announcements"><%=announcements.highScorers%></h3>
                         <%}%>

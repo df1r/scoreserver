@@ -35,15 +35,32 @@ var doStatistician = {
 
 var doCoaches = [];
 
+var restoreStrings = [];
+
 
 function isJSONString(str) {
     try {
         JSON.parse(str);
+        return (true);
     } catch (e) {
-        console.log("JSON problem: ", e);
+        console.log("JSON problem");
+        return (false);
+    }
+}
+
+function isGoodBackupString(str) {
+    var restoredObject = JSON.parse(str);
+    try {
+        if(restoredObject.doCoaches.length == restoredObject.doStatus.maximumCoachId) {
+            return true;
+        } else {
+            console.log("Backup Object has mismatched maximumCoachId");
+            return false;
+        }
+    } catch (e) {
+        console.log("Backup Object has wrong keys");
         return false;
     }
-    return true;
 }
 
 function sumTen(array) {
@@ -110,7 +127,7 @@ function DoCoachRecord(iD, first, middle, last, school) { // This is a construct
 // *************************************************************************************************
 // Syntax examples:
 // dObjectRead("coach", 5);
-// dObjectRead("status");
+// dObjectRead("contestStatus");
 // dObjectRead("statistician");
 // *************************************************************************************************
 
@@ -126,14 +143,14 @@ function dObjectRead(reqType, coachId) {
                 console.log("dObjectRead: coach ID was expected as second argument");
                 return;
             }
-        case "status":
+        case "contestStatus":
             var returnedStatus = JSON.parse(JSON.stringify(doStatus));
             return returnedStatus;
         case "statistician":
             var returnedStatistician = JSON.parse(JSON.stringify(doStatistician));
             return returnedStatistician;
         default:
-            console.log(`dObjectRead: reqType was expected to be "coach" or "status" or "statistician", not ${reqType}.`);
+            console.log(`dObjectRead: reqType was expected to be "coach" or "contestStatus" or "statistician", not ${reqType}.`);
             return false;
     }
 }
@@ -141,7 +158,7 @@ function dObjectRead(reqType, coachId) {
 // *************************************************************************************************
 // Syntax examples:
 // dObjectWrite("coach", coachrecord);
-// dObjectWrite("status", statusrecord);
+// dObjectWrite("contestStatus", statusrecord);
 // dObjectWrite("statistician", statisticianrecord);
 // dObjectWrite("permissions", permissionrecord, 5);
 // dObjectWrite("session", session, 5);
@@ -158,9 +175,9 @@ function dObjectWrite(reqType, record, coachId) {
     switch (reqType) {
         case "coach":
             if (record.iD == "new") {
-                var statusRecord = dObjectRead("status");
+                var statusRecord = dObjectRead("contestStatus");
                 statusRecord.maximumCoachId += 1;
-                dObjectWrite("status", statusRecord);
+                dObjectWrite("contestStatus", statusRecord);
                 record.iD = statusRecord.maximumCoachId;
                 doCoaches.push(record);
                 return true;
@@ -177,7 +194,7 @@ function dObjectWrite(reqType, record, coachId) {
                     return true;
                 }
             }
-        case "status":
+        case "contestStatus":
             doStatus = JSON.parse(JSON.stringify(record));
             return true;
         case "permissions":
@@ -215,7 +232,7 @@ function dObjectWrite(reqType, record, coachId) {
             doStatistician = JSON.parse(JSON.stringify(record));
             return true;
         default:
-            console.log(`dObjectWrite: reqType was expected to be "coach" or "status" or "permissions" or "session" or "place" or "statistician", not ${reqType}`);
+            console.log(`dObjectWrite: reqType was expected to be "coach" or "contestStatus" or "permissions" or "session" or "place" or "statistician", not ${reqType}`);
             return false;
     }
 }
@@ -234,7 +251,7 @@ function addFullName(personRecord) {
 // makeAlphaSchoolsList uses the list of coaches in the data object to create an alphabetical list of schools.
 
 function makeAlphaSchoolsList() {
-    var max = dObjectRead("status").maximumCoachId;
+    var max = dObjectRead("contestStatus").maximumCoachId;
     var alphaSchools = [];
     for (var iD = 1; iD <= max; iD++){ 
         var coach =  dObjectRead("coach", iD); 
@@ -334,11 +351,11 @@ app.get("/", (req, res)=>{
     var arrivalMsg = (req.query.arrivedFrom || "");
     console.log(`Login page. ${arrivalMsg}`)
     var alphaSchools = makeAlphaSchoolsList();
-    var status = dObjectRead("status");
+    var contestStatus = dObjectRead("contestStatus");
     res.render("index.ejs", {
         alphaSchools : alphaSchools,
         arrivalMsg: arrivalMsg,
-        status: status,
+        contestStatus: contestStatus,
     });
 });
 
@@ -346,11 +363,12 @@ app.post("/", (req, res) => {
     if (req.body.coachId == "statistician") {
         var statistician = dObjectRead("statistician");
         if (req.body.passWord == statistician.passWord) {
+            console.log(`Statistician has logged in.`);
             statistician.session = Math.random();
             dObjectWrite("statistician", statistician);
-            var status = dObjectRead("status");
+            var contestStatus = dObjectRead("contestStatus");
             var coachList = [];
-            for (var j = 1; j <= status.maximumCoachId; j++) {
+            for (var j = 1; j <= contestStatus.maximumCoachId; j++) {
                 coachList.push(dObjectRead("coach", j));
             }
             coachList.forEach((coach) => {
@@ -359,7 +377,7 @@ app.post("/", (req, res) => {
             var alphaSchools = makeAlphaSchoolsList();
             res.render("statistician.ejs", {
                 state: "readOnly",
-                status: status,
+                contestStatus: contestStatus,
                 coachList: coachList,
                 alphaSchools: alphaSchools,
                 session: statistician.session, // At the next server request the session number must match, to prevent simultaneous logins.
@@ -370,12 +388,12 @@ app.post("/", (req, res) => {
         }
     } else {
         var coach = dObjectRead("coach", req.body.coachId);
-        var currentStatus = dObjectRead("status");
+        var currentStatus = dObjectRead("contestStatus");
         if (req.body.passWord == coach.passWord) {
             coach.session = Math.random();
             dObjectWrite("session", coach.session, coach.iD);
             addFullName(coach);
-            console.log(`Coach ${coach.iD}: ${coach.fullName} has logged in.`);
+            console.log(`Coach ${coach.iD}: ${coach.school} has logged in.`);
             var alphaStudents = makeAlphaStudentsList(coach);
             res.render("coach.ejs",
                 {
@@ -410,10 +428,10 @@ app.post("/statistician", (req, res) => {
     console.log(`statistician: Request ${req.body.requestType}`);
     if (statistician.session == req.body.session) {
         var announcements;
-        var status = dObjectRead("status");
+        var contestStatus = dObjectRead("contestStatus");
         var state = "readOnly";
         var coachList = [];
-        for (var j = 1; j <= status.maximumCoachId; j++) {
+        for (var j = 1; j <= contestStatus.maximumCoachId; j++) {
             coachList.push(dObjectRead("coach", j));
         }
         coachList.forEach((coach) => {
@@ -469,15 +487,15 @@ app.post("/statistician", (req, res) => {
                 break;
             case "submitVenue":
                 var statusRecord = {
-                    maximumCoachId: status.maximumCoachId,
+                    maximumCoachId: contestStatus.maximumCoachId,
                     contestNumber: req.body.contestNumber,
                     teamContest: false,
                     hostSchool: req.body.hostSchool,
                     contestDate: req.body.contestDate,
                 }
                 if (req.body.teamContest) { statusRecord.teamContest = true } ;
-                dObjectWrite("status", statusRecord);
-                status = dObjectRead("status");
+                dObjectWrite("contestStatus", statusRecord);
+                contestStatus = dObjectRead("contestStatus");
                 break;
             case "newContest":
                 state = "modifyVenue";
@@ -532,7 +550,7 @@ app.post("/statistician", (req, res) => {
                 }
             case "computeRanking":  // This not only populates the coach.place's, but also renders the announcements.
                 state = "showAnnouncements"; // Open the contest ending box when the state is showAnnouncements.
-                if (!(status.teamContest)) {
+                if (!(contestStatus.teamContest)) {
                     announcements = {
                         firstPlace: "1: ",
                         secondPlace: "2: ",
@@ -572,8 +590,6 @@ app.post("/statistician", (req, res) => {
                         j++;
                         for (var k = 0; k < 10; k++) {
                             if (sumTen(coach.scoreSheet.scores[k]) == announcements.highScore) {
-                                console.log(`coach ${coach.iD}: coach.scoreSheet.studentPlacement[${k}] = ${coach.scoreSheet.studentPlacement[k]}`);
-                                console.log(`coach.students[${coach.scoreSheet.studentPlacement[k] - 1}] is being sent to addFullNames.`);
                                 addFullName(coach.students[coach.scoreSheet.studentPlacement[k] - 1]);
                                 announcements.highScorers = announcements.highScorers + coach.school + ": "
                                     + coach.students[coach.scoreSheet.studentPlacement[k] - 1].fullName + ",\n";
@@ -614,8 +630,8 @@ app.post("/statistician", (req, res) => {
                 coachList.forEach((coach) => { 
                     maxNumberStudents = Math.max(maxNumberStudents, coach.students.length);
                 });
-                if (status.teamContest) { 
-                    lines[0] = status.contestDate + "," + status.contestNumber;
+                if (contestStatus.teamContest) { 
+                    lines[0] = contestStatus.contestDate + "," + contestStatus.contestNumber;
                     coachList.forEach((coach) => {  // The cb parameter "coach" is not used, but this seems like the clearest way to write loop.
                         lines[0] += ",".repeat(12);
                     });
@@ -641,7 +657,7 @@ app.post("/statistician", (req, res) => {
                         lines[row - 1] = lines[row - 2];
                     }
                 } else { 
-                    lines[0] = status.contestDate + "," + status.contestNumber;
+                    lines[0] = contestStatus.contestDate + "," + contestStatus.contestNumber;
                     coachList.forEach((coach) => { 
                         lines[0] += ",".repeat(12);
                     });
@@ -704,7 +720,7 @@ app.post("/statistician", (req, res) => {
                         console.log(err);
                         return;
                     } else {
-                        res.download(CSVFile, "yyyy contest " + status.contestNumber + ".csv", (err) => {
+                        res.download(CSVFile, "yyyy contest " + contestStatus.contestNumber + ".csv", (err) => {
                             if (err) {
                                 console.log("contest download error: ", err);
                                 console.log("headersSent: ", Object.keys(res._headerSent));
@@ -734,22 +750,6 @@ app.post("/statistician", (req, res) => {
                 });
                 return;
             case "restoreBackup":
-                if (isJSONString(req.body.backupJSON)) {
-                    var backedUpObject = JSON.parse(req.body.backupJSON);
-                    doStatus = backedUpObject.doStatus;
-                    status = dObjectRead("status");
-                    doCoaches = backedUpObject.doCoaches;
-                    doCoaches.forEach((coach) => { 
-                        coach.place = "TBD";
-                    });
-                    coachList = [];
-                    for (var j = 1; j <= status.maximumCoachId; j++) {
-                        coachList.push(dObjectRead("coach", j));
-                    }
-                    coachList.forEach((coach) => {
-                        addFullName(coach);
-                    });
-                }
                 break;
             case "cleanDeleted":
                 coachList.forEach((coach) => {
@@ -773,7 +773,7 @@ app.post("/statistician", (req, res) => {
                     if (err) {
                         console.log("Error downloading log file: ", err);
                     } else {
-                        fs.unlink(logPath, (err) => {
+                        fs.rm(logPath, { force: true }, (err) => {
                             if (err) {
                                 console.error('Error deleting file:', err);
                             } else {
@@ -795,7 +795,7 @@ app.post("/statistician", (req, res) => {
         var alphaSchools = makeAlphaSchoolsList();
         res.render("statistician.ejs", {
             state: state,
-            status: status,
+            contestStatus: contestStatus,
             coachList: coachList,
             alphaSchools: alphaSchools,
             session: statistician.session,
@@ -807,15 +807,71 @@ app.post("/statistician", (req, res) => {
     }
 });
 
+app.post("/restore", (req, res) => { 
+    var statistician = dObjectRead("statistician");
+    if (statistician.session == req.body.session) {
+        var nStart = req.body.packetStats.search(/\d+/); // format of packetStats is /p\d#\D\d#z/. Example: p203t237z.
+        var nEnd = nStart + req.body.packetStats.slice(nStart).search(/\D/);
+        var tStart = nEnd + req.body.packetStats.slice(nEnd).search(/\d+/);
+        var tEnd = tStart + req.body.packetStats.slice(tStart).search(/\D/);
+        var packetNumber = Number(req.body.packetStats.slice(nStart, nEnd));
+        var packetTotal = Number(req.body.packetStats.slice(tStart, tEnd));
+        restoreStrings[packetNumber-1] = req.body.packetBody;
+        var j = packetTotal;
+        while ((j > 0) && (restoreStrings[j - 1])) { j--; };
+        if (j == 0) {
+            console.log("Statistician: Restoring from backup");
+            var contestStatus = dObjectRead("contestStatus");
+            var backupJSON = "";
+            for (j = 0; j < packetTotal; j++) {
+                backupJSON += restoreStrings[j];
+                restoreStrings[j] = null; // This is necessary so that the next restore will work as planned
+            }
+            if ((isJSONString(backupJSON)) && isGoodBackupString(backupJSON)) {
+                var backedUpObject = JSON.parse(backupJSON);
+                doStatus = backedUpObject.doStatus;
+                contestStatus = dObjectRead("contestStatus");
+                doCoaches = backedUpObject.doCoaches;
+                doCoaches.forEach((coach) => {
+                    coach.place = "TBD";
+                });
+                var coachList = [];
+                for (var j = 1; j <= contestStatus.maximumCoachId; j++) {
+                    coachList.push(dObjectRead("coach", j));
+                }
+                coachList.forEach((coach) => {
+                    addFullName(coach);
+                });
+                console.log("Backup successful");
+                res.render("statistician.ejs", {
+                    state: "readOnly",
+                    contestStatus: contestStatus,
+                    coachList: coachList,
+                    alphaSchools: makeAlphaSchoolsList(),
+                    session: statistician.session,
+                    announcements: "",
+                });
+            } else {
+                console.log("Backup aborted");
+                return res.send('<h1>Data not valid</h1><a href="javascript:history.back()">Back</a>');
+            }
+        }
+        // put something here to send something to the client so that the browser doesn't seem to be hanging.
+    } else {
+        console.log(`Statistician: session was terminated by server`);
+        res.redirect("/?arrivedFrom=bumped");
+    }
+});
+
 app.post("/manageTeams", (req, res) => {
     var statistician = dObjectRead("statistician");
     var editTeam = "none";
     console.log(`statistician: Request ${req.body.requestType}`);
     if (statistician.session == req.body.session) {
         req.body.summerMode = req.body.summerMode || false;
-        var status = dObjectRead("status");
+        var contestStatus = dObjectRead("contestStatus");
         var coachList = [];
-        for (var j = 1; j <= status.maximumCoachId; j++) {
+        for (var j = 1; j <= contestStatus.maximumCoachId; j++) {
             coachList.push(dObjectRead("coach", j));
         }
         coachList.forEach((coach) => {
@@ -866,7 +922,7 @@ app.post("/manageTeams", (req, res) => {
                 dObjectWrite("coach", coachList[idx]);
                 break;
             case "deleteTeam":
-                for (var j = coachId; j < status.maximumCoachId; j++) {
+                for (var j = coachId; j < contestStatus.maximumCoachId; j++) {
                     var idx1 = j - 1; // Recall that the array index is one less than the coach ID
                     var idx2 = j; // idx2 is the index of the coach that is being copied downward
                     coachList[idx1] = coachList[idx2];
@@ -876,8 +932,8 @@ app.post("/manageTeams", (req, res) => {
                 }
                 coachList = coachList.slice(0, -1); 
                 doCoaches = doCoaches.slice(0, -1);
-                status.maximumCoachId = status.maximumCoachId - 1;
-                dObjectWrite("status", status);
+                contestStatus.maximumCoachId = contestStatus.maximumCoachId - 1;
+                dObjectWrite("contestStatus", contestStatus);
                 break;
             case "addTeam":
                 var newTeam = new DoCoachRecord("new", req.body.coachFirst, req.body.coachMiddle, req.body.coachLast, req.body.coachSchool);
@@ -969,7 +1025,7 @@ app.post("/statisticianroster", (req, res) => {
 
 app.post("/coach", (req, res)=>{ 
     var coach = dObjectRead("coach", req.body.coachId);
-    var currentStatus = dObjectRead("status");
+    var currentStatus = dObjectRead("contestStatus");
     var state = "readOnly";
     var numAddedStuds = 0; // Used to keep track of how many name "add student" requests have been made so far.
                             // These students are temporarily named with a numeric suffix, as in " Student3".
@@ -1110,7 +1166,7 @@ app.post("/coach", (req, res)=>{
                     coach.students[idx].last = req.body["last" + j];
                 }
                 dObjectWrite("coach", coach);
-                var currentStatus = dObjectRead("status");
+                var currentStatus = dObjectRead("contestStatus");
                 var alphaStudents = makeAlphaStudentsList(coach);
                 state = "readOnly";
                 break;
@@ -1157,14 +1213,14 @@ app.post("/coach", (req, res)=>{
                 break;
             case "downloadScoresheet":
                 var lines = [];
-                var status = dObjectRead("status");
-                lines[0] = ",,,Central Jersey Math League" + ",".repeat(10);
-                lines[1] = ",,," + coach.school + " Score Sheet" + ",".repeat(10);
+                var contestStatus = dObjectRead("contestStatus");
+                lines[0] = ",,,Central Jersey Math League" + ",".repeat(10) + "Place:";
+                lines[1] = ",,," + coach.school + " Score Sheet" + ",".repeat(10) + coach.place;
                 lines[2] = ",".repeat(13); // row 3 is empty
                 lines[3] = "Coach,,,Venue,,,,Date,,Contest No,,,,";
-                lines[4] = coach.fullName + ",,," + status.hostSchool + ",".repeat(4) + status.contestDate + ",," + status.contestNumber + ",".repeat(4);
+                lines[4] = coach.fullName + ",,," + contestStatus.hostSchool + ",".repeat(4) + contestStatus.contestDate + ",," + contestStatus.contestNumber + ",".repeat(4);
                 lines[5] = lines[2]; // row 6 is empty
-                if (!(status.teamContest)) { 
+                if (!(contestStatus.teamContest)) { 
                     lines[6] = ",,Question No.:,1,2,3,4,5,6,7,8,9,10,Scores";
                     lines[7] = ",Lastname,First [Middle]" + ",".repeat(11);
                     var varsityScores = [];
@@ -1232,7 +1288,7 @@ app.post("/coach", (req, res)=>{
                         console.log(err);
                         return;
                     } else {
-                        res.download(CSVFile, "CJMLscoresheet" + status.contestNumber + ".csv", (err) => {
+                        res.download(CSVFile, "CJMLscoresheet" + contestStatus.contestNumber + ".csv", (err) => {
                             if (err) {
                                 console.log("contest download error: ", err);
                                 console.log("headersSent: ", Object.keys(res._headerSent));
@@ -1323,7 +1379,7 @@ app.post("/roster", (req, res) => {
 
 app.post("/rosteredit", (req, res) => {
     var coach=dObjectRead("coach",req.body.coachId);
-    var currentStatus = dObjectRead("status");
+    var currentStatus = dObjectRead("contestStatus");
     console.log(`${coach.iD}: Request ${req.body.requestType}`);
     if (coach.session == req.body.session) { 
         if (req.body.requestType.startsWith("editStudent")) {
