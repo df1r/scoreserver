@@ -1,6 +1,6 @@
 const pSize = 800; // packet size. payload too large error above a certain size, approx. 8000. Safety factor of 10.
 const timeOutMillisecs = 500; // packet interval. Throttling happens if < 50ms, after 400 packets. Safety factor of 10.
-const interval = 60000; // period in ms of repeating autobackup
+const interval = 60000; // period in ms of repeating autobackup (60000 for 1 minute, set to 3000 for testing)
 var restoreReqButton = document.getElementById("restoreReqButton"); // makes restore options appear
 var restoreButton = document.getElementById("restoreButton"); // pressed after JSON text is pasted
 var packetSendButton = document.getElementById("packetSendButton"); // invisible, clicked by javascript
@@ -11,7 +11,8 @@ var finishEndingButton = document.getElementById("finishEndingContest"); // make
 var endingContainer = document.getElementById("endingButtons"); // just a div, but I wanted the buttons that appear to be enclosed by a box
 var rankings = document.getElementById("rankings"); // an ending-contest button
 var downPaste = document.getElementById("downPaste"); // a button to download the spreadsheet pasteable contest
-var downBack = document.getElementById("downBack"); // a button to manually download a backup JSON and stop autobackups
+var downBack1 = document.getElementById("downBack1"); // a button to manually download a backup JSON and stop autobackups
+var downBack2 = document.getElementById("downBack2"); // another button to manually download a backup JSON and stop autobackups
 var downBackAuto = document.getElementById("downBackAuto"); // an always-invisible button clicked by javascript every minute
 var beginAutoBackups = document.getElementById("beginAutoBackups"); // button to start autobackups
 var progressCounter = document.getElementById("progressCounter"); // p element displaying the packet count during a restore operation
@@ -34,7 +35,11 @@ downBackAuto.addEventListener("click", () => {
     backingUp = setTimeout(backupPrompt, interval);
 });
 
-downBack.addEventListener("click", () => { 
+downBack1.addEventListener("click", () => { 
+    clearTimeout(backingUp);
+});
+
+downBack2.addEventListener("click", () => { 
     clearTimeout(backingUp);
 });
 
@@ -53,7 +58,7 @@ endContestButton.addEventListener("click", () => {
     endingContainer.classList.add("boxed");
     rankings.classList.remove("invisible");
     downPaste.classList.remove("invisible");
-    downBack.classList.remove("invisible");
+    downBack1.classList.remove("invisible");
     finishEndingButton.classList.remove("invisible");
 });
 
@@ -62,7 +67,7 @@ finishEndingButton.addEventListener("click", () => {
     endingContainer.classList.remove("boxed");
     rankings.classList.add("invisible");
     downPaste.classList.add("invisible");
-    downBack.classList.add("invisible");
+    downBack1.classList.add("invisible");
     finishEndingButton.classList.add("invisible");
 });
 
@@ -95,3 +100,6 @@ function sendPacket() {
     }
 }
 
+// start auto-backups by default
+
+backingUp = setTimeout(backupPrompt, interval);

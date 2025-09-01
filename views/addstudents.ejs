@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%=coachSchool%></title>
+    <link rel="stylesheet" href="/coach.css">
+</head>
+<body>
+    <h1>Fill in a name for each new student on the scoresheet</h1>
+    <form action="/coach" method="post" id="tocoachpage">
+        <input type="checkbox" checked="checked" class="invisible" name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible" name="session" value="<%=session%>" />
+        <button type="submit" class="submitButton" name="requestType" value="addStudents">
+            Back to Scoresheet
+        </button>
+    </form>
+    <table class="narrow-table">
+        <tbody>
+            <% var notYetFocused = true; %>
+            <% for (var j = 0; j < 10; j++) {%>
+                <%if ((locals.scoreSheetRows[j]) && (scoreSheetRows[j].iD=="addStudent")) {%>
+                    <input type="checkbox" checked="checked" class="invisible" form="tocoachpage" 
+                            name="<%='exists' + j%>" value="true" />
+                    <tr>
+                        <td><%=j+1%></td>
+                        <td class="left-aligned">
+                            <input type="text" form="tocoachpage" placeholder="Lastname"
+                                    name="<%='lastName' + j%>" required 
+                                    <% if (notYetFocused) { notYetFocused = false; %> id="focusHere" <%}%> />
+                        </td>
+                        <td class="left-aligned">
+                            <input type="text" form="tocoachpage" placeholder="Firstname"
+                                    name="<%='firstName' + j%>" required />
+                        </td>
+                        <td class="left-aligned">
+                            <input type="text" form="tocoachpage" placeholder="Middlename (optional)"
+                                    name="<%='middleName' + j%>" />
+                        </td>
+                    </tr>
+                <%} else {%>
+                    <input type="checkbox" checked="checked" class="invisible" form="tocoachpage" 
+                            name="<%='exists' + j%>" value="false" />
+                    <tr>
+                        <p>
+                            <td><%=j+1%></td>
+                            <%if (locals.scoreSheetRows[j]){%>
+                                <td class="left-aligned"><%=locals.scoreSheetRows[j].last+','%></td>
+                                <td class="left-aligned"><%=locals.scoreSheetRows[j].first%></td>
+                                <td class="left-aligned"><%=locals.scoreSheetRows[j].middle%></td>
+                            <%} else {%>
+                                <td>empty</td><td>empty</td><td>empty</td>
+                            <%}%>
+                        </p>
+                    </tr>
+                <%}%>
+            <%}%>
+        </tbody>
+    </table>
+    <form action="/roster" method="post" id="torosterpage">
+        <input type="checkbox" checked="checked" class="invisible"
+        name="coachId" value="<%=coachId%>" />
+        <input type="checkbox" checked="checked" class="invisible" 
+            name="session" value="<%=session%>" />
+    </form>
+    <% if (!(notYetFocused)) {%>
+        <script>
+            document.getElementById("focusHere").focus();
+        </script>
+    <%}%>
+</body>
+</html>

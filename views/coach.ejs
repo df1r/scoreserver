@@ -54,7 +54,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                     School:&nbsp;
                     <input type="text" placeholder="Enter school name" form="editTeam" name="coachSchool" 
                         value="<%=coachSchool%>" required />
-                    <button type="submit" form="editTeam" name="requestType" value="submitTeam">
+                    <button type="submit" form="editTeam" name="requestType" value="submitTeam" class="submitButton">
                         Save Changes
                     </button>
                     <button type="submit" form="mainForm" name="requestType" value="readOnly">
@@ -89,10 +89,6 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                 name="coachId" value="<%=coachId%>" />
             <input type="checkbox" checked="checked" class="invisible"
                 name="session" value="<%=session%>" />
-            <%if(state=="enterNames"){%>
-                <input type="checkbox" checked="checked" class="invisible"
-                    name="numAddedStuds" value="<%=numAddedStuds%>" />
-            <%}%>
         </form>
         <form action="/coach" method="POST" id="scoresForm">
             <input type="checkbox" checked="checked" class="invisible"
@@ -106,14 +102,14 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
             <input type="checkbox" checked="checked" class="invisible"
                 name="session" value="<%=session%>" />
         </form>
-        <div class="obuttonbar">
+        <div class="specialbuttonbar">
             <%if(currentStatusTeamContest){%>
                 <p>&nbsp;</p>
             <%} else {
                 if(state=="enterNames" ){%>
                     <div class="oleftbutton">
                         <button type="submit" form="namesForm" 
-                                    name="requestType" value="submitNames">
+                                    name="requestType" value="submitNames" class="submitButton">
                             Submit Names
                         </button>
                         <button type="submit" form="mainForm" name="requestType" value="readOnly">
@@ -131,7 +127,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
             <%if(state=="enterScores"){%>
                 <div class="omiddlebutton">
                     <button type="submit" form="scoresForm" 
-                                name="requestType" value="submitScores">
+                                name="requestType" value="submitScores" class="submitButton">
                         Submit Scores
                     </button>
                     <button type="submit" form="mainForm" 
@@ -155,7 +151,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
             <br />
         </div>
         <% if (locals.duplicates) {%>
-            <p id="multipleerror">You must not enter the same student multiple times</p>
+            <p id="multipleerror"><%=duplicateErrorMessage%></p>
         <%}%>
         <% if (place != "TBD") {%>
             <button type="submit" id="downloadScoresheet" form="mainForm" 
@@ -238,7 +234,10 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                                                         <%=student.fullName%>
                                                 </option> 
                                             <%}) %>
-                                            <option value="addStudent">Add a Student</option>
+                                            <option value="addStudent"
+                                                    <%if(coachScoreSheetStudentPlacement[k]=="addStudent") {%> selected <%}%> >
+                                                Add a Student
+                                            </option>
                                         </select>
                                     </td>
                                     <%for(var j=0; j<10; j++){%>
@@ -275,11 +274,14 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                                             <option value="empty">Choose a student</option>
                                             <%alphaStudents.forEach((student)=>{%>
                                                 <option value="<%=student.iD%>" 
-                                                    <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
+                                                    <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%> selected <%}%>>
                                                         <%=student.fullName%>
                                                 </option>
                                             <%}) %>
-                                            <option value="addStudent">Add a Student</option>
+                                            <option value="addStudent"
+                                                    <%if(coachScoreSheetStudentPlacement[k]=="addStudent") {%> selected <%}%> >
+                                                Add a Student
+                                            </option>
                                         </select>
                                     </td>
                                     <%for(var j=0; j<10; j++){%>

@@ -53,6 +53,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th scope="col">Coach ID</th>
                             <th scope="col">School/Coach</th>
                             <th scope="col">Roster Count</th>
                         </tr>
@@ -63,6 +64,9 @@
                                 return coach.iD == school.coachId;
                             });%>
                             <tr>
+                                <td>
+                                    <%=school.coachId%>
+                                </td>
                                 <%if(school.coachId == editTeam){%>
                                     <td>
                                         <input type="text" placeholder="Enter school name" form="editTeam"

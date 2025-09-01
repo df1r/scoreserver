@@ -63,6 +63,25 @@ function isGoodBackupString(str) {
     }
 }
 
+function isDuplicate(sRecord) { // An sRecord has keys first, middle, last, coachId.
+    var coach = dObjectRead("coach", sRecord.coachId);
+    var returnValue = false;
+    coach.students.forEach((student) => { 
+        var first = student.first.trim().toLowerCase();
+        var middle = student.middle.trim().toLowerCase();
+        var last = student.last.trim().toLowerCase();
+        if (last.startsWith("!")) {
+            last = last.slice(1);
+        }
+        returnValue = (returnValue) || (
+            (first == sRecord.first.trim().toLowerCase()) &&
+            (middle == sRecord.middle.trim().toLowerCase()) &&
+            (last == sRecord.last.trim().toLowerCase())
+        );
+    });
+    return returnValue;
+}
+
 function sumTen(array) {
     return (
         Number(array[0])
@@ -241,9 +260,9 @@ function dObjectWrite(reqType, record, coachId) {
 
 function addFullName(personRecord) {
         if (personRecord.middle == "") {
-            personRecord.fullName = personRecord.first + " " + personRecord.last;
+            personRecord.fullName = personRecord.last + ", " + personRecord.first;
         } else {
-            personRecord.fullName = personRecord.first + " " + personRecord.middle + " " + personRecord.last;
+            personRecord.fullName = personRecord.last + ", " + personRecord.first + " " + personRecord.middle;
         }
     return;
 }
@@ -394,27 +413,38 @@ app.post("/", (req, res) => {
             dObjectWrite("session", coach.session, coach.iD);
             addFullName(coach);
             console.log(`Coach ${coach.iD}: ${coach.school} has logged in.`);
-            var alphaStudents = makeAlphaStudentsList(coach);
-            res.render("coach.ejs",
-                {
-                    state: "readOnly",
-                    coachId: coach.iD, // This value is posted by the coach's form to allow checking of whether the session number matches.
-                    session: coach.session, // ... to allow checking of whether the session number matches.
-                    coachFullName: coach.fullName, // The full coach record is not sent, to avoid serving the password.
-                    coachSchool: coach.school,
-                    alphaStudents: alphaStudents,
-                    coachScoreSheetStudentPlacement: coach.scoreSheet.studentPlacement,
-                    coachScoreSheetScores: coach.scoreSheet.scores,
-                    currentStatusHostSchool: currentStatus.hostSchool,
-                    currentStatusContestDate: currentStatus.contestDate,
-                    currentStatusContestNumber: currentStatus.contestNumber,
-                    currentStatusTeamContest: currentStatus.teamContest,
-                    editTeam: false,
-                    place: coach.place,
-                    coachFirst: "",
-                    coachMiddle: "",
-                    coachLast: "",
+            if (coach.passWord == "CJML") {
+                res.render("changePwd.ejs", {
+                    instrMsg: 'Please change your password to anything other than "CJML". All fields are required.',
+                    returnPath: "/coach",
+                    coachId: coach.iD,
+                    session: coach.session,
                 });
+                return;
+            } else {
+                var alphaStudents = makeAlphaStudentsList(coach);
+                res.render("coach.ejs",
+                    {
+                        state: "readOnly",
+                        coachId: coach.iD, // This value is posted by the coach's form to allow checking of whether the session number matches.
+                        session: coach.session, // ... to allow checking of whether the session number matches.
+                        coachFullName: coach.fullName, // The full coach record is not sent, to avoid serving the password.
+                        coachSchool: coach.school,
+                        alphaStudents: alphaStudents,
+                        coachScoreSheetStudentPlacement: coach.scoreSheet.studentPlacement,
+                        coachScoreSheetScores: coach.scoreSheet.scores,
+                        currentStatusHostSchool: currentStatus.hostSchool,
+                        currentStatusContestDate: currentStatus.contestDate,
+                        currentStatusContestNumber: currentStatus.contestNumber,
+                        currentStatusTeamContest: currentStatus.teamContest,
+                        editTeam: false,
+                        place: coach.place,
+                        coachFirst: "",
+                        coachMiddle: "",
+                        coachLast: "",
+                    });
+                return;
+            }
         } else {
             res.redirect("/?arrivedFrom=wrongpwd");
         }
@@ -568,10 +598,6 @@ app.post("/statistician", (req, res) => {
                         for (var j = 5; j < 10; j++) {
                             announcements.highScore = Math.max(announcements.highScore, sumTen(coach.scoreSheet.scores[j]));
                         }
-                        // varsityScores.sort((scoreA, scoreB) => {
-                        //     return (scoreB - scoreA);
-                        // });
-                        // teamScores.push(varsityScores[0] + varsityScores[1] + varsityScores[2]);
                         teamScores.push(sumTopThree(varsityScores));
                     });
                     var sortedScores = teamScores.slice().sort((scoreA, scoreB) => { return (scoreB - scoreA) });
@@ -749,19 +775,20 @@ app.post("/statistician", (req, res) => {
                     }
                 });
                 return;
-            case "restoreBackup":
+            case "restoreBackup": // Is this even used?
+                console.log("Yes, restoreBackup is used.");
                 break;
             case "cleanDeleted":
                 coachList.forEach((coach) => {
-                    let deleteIndices = [];
-                    coach.students.forEach((student) => {
-                        if (student.last.startsWith("!")) {
-                            var idx = coach.students.findIndex((a) => { return (a.iD == student.iD) });
-                            deleteIndices.push(idx);
+                    var studentListLength = coach.students.length;
+                    for (var j = studentListLength - 1; j >= 0; j--) {
+                        if (coach.students[j].last.startsWith("!")) {
+                            coach.students.splice(j, 1);
                         }
-                    });
-                    for (var j = deleteIndices.length - 1; j >= 0; j--) {
-                        coach.students.splice(deleteIndices[j], 1);
+                    };
+                    studentListLength = coach.students.length;
+                    for (var j = 0; j < studentListLength; j++) { 
+                        coach.students[j].iD = j + 1;
                     }
                     dObjectWrite("coach", coach);
                 });
@@ -842,7 +869,7 @@ app.post("/restore", (req, res) => {
                 coachList.forEach((coach) => {
                     addFullName(coach);
                 });
-                console.log("Backup successful");
+                console.log("Restore successful");
                 res.render("statistician.ejs", {
                     state: "readOnly",
                     contestStatus: contestStatus,
@@ -852,11 +879,10 @@ app.post("/restore", (req, res) => {
                     announcements: "",
                 });
             } else {
-                console.log("Backup aborted");
+                console.log("Restore aborted");
                 return res.send('<h1>Data not valid</h1><a href="javascript:history.back()">Back</a>');
             }
         }
-        // put something here to send something to the client so that the browser doesn't seem to be hanging.
     } else {
         console.log(`Statistician: session was terminated by server`);
         res.redirect("/?arrivedFrom=bumped");
@@ -897,17 +923,6 @@ app.post("/manageTeams", (req, res) => {
                 break;
             case "summerModeOn":
                 req.body.summerMode = true;
-                break;
-            case "cleanDeleted":
-                coachList.forEach((coach) => {
-                    var studentListLength = coach.students.length;
-                    for (var j = studentListLength - 1; j >= 0; j--) {
-                        if (coach.students[j].last.startsWith("!")) {
-                            coach.students.splice(j, 1);
-                        }
-                    };
-                    dObjectWrite("coach", coach);
-                });
                 break;
             case "editTeam":
                 editTeam = coachId;
@@ -1027,10 +1042,9 @@ app.post("/coach", (req, res)=>{
     var coach = dObjectRead("coach", req.body.coachId);
     var currentStatus = dObjectRead("contestStatus");
     var state = "readOnly";
-    var numAddedStuds = 0; // Used to keep track of how many name "add student" requests have been made so far.
-                            // These students are temporarily named with a numeric suffix, as in " Student3".
     var displayShiftWarning = ""; // This is not currently used, but will be in a future version.
     var duplicates = false; // Used when scoresheet names are submitted, to determine whether to accept the submission.
+    var duplicateErrorMessage = ""; // Used when scoresheet names are submitted, in case submission is not accepted.
     var namesLockedMsg = false; // Tells whether to display the warning that names are locked.
     var scoresLockedMsg = false; // Tells whether to display the warning that scores are locked.
     var coachScoreSheetStudentPlacement = coach.scoreSheet.studentPlacement;
@@ -1047,6 +1061,7 @@ app.post("/coach", (req, res)=>{
                 res.render("roster.ejs", {
                     alphaStudents: alphaStudents,
                     coachId: coach.iD,
+                    coachSchool: coach.school,
                     session: coach.session,
                 });
                 return;
@@ -1074,25 +1089,6 @@ app.post("/coach", (req, res)=>{
                         req.body.selectStudent8,
                         req.body.selectStudent9,
                     ];
-                    numAddedStuds = req.body.numAddedStuds;
-                    var listLength = coach.students.length;
-                    for (var j = 0; j < 10; j++) {
-                        if (tempCoachScoreSheetStudentPlacement[j] == "addStudent") {
-                            numAddedStuds++;
-                            var newId = listLength + numAddedStuds;
-                            coach.students.push(
-                                {
-                                    first: "New",
-                                    middle: "",
-                                    last: (" Student" + numAddedStuds), // The space before the 'S' is to place it alphabetically first.
-                                    iD: newId,
-                                }
-                            );
-                            tempCoachScoreSheetStudentPlacement[j] = newId;
-                        }
-                    }
-                    // Before checking for duplicates on the scoresheet, update the list of students in the data object.
-                    dObjectWrite("coach", coach);
                     // Check that the list of students on the scoresheet is "clean" and if so finish updating the data object.
                     if (isClean(tempCoachScoreSheetStudentPlacement)) { // come here when there is no student listed multiple times.
                         var packedArray = fillSpaces(tempCoachScoreSheetStudentPlacement, coach.scoreSheet.scores);
@@ -1103,26 +1099,47 @@ app.post("/coach", (req, res)=>{
                         dObjectWrite("coach", coach); // update the data object
                         coachScoreSheetStudentPlacement = coach.scoreSheet.studentPlacement;
                         displayShiftWarning = emptySpaceFound; // will be used in a future version
-                        if (numAddedStuds == 0) {
+                        var scoreSheetRows = [];
+                        var anyNewStudents = false;
+                        for (var j = 0; j < 10; j++) {
+                            if (coachScoreSheetStudentPlacement[j] == "addStudent") {
+                                anyNewStudents = true;
+                                scoreSheetRows[j] = {
+                                    iD: "addStudent",
+                                    last: "",
+                                    first: "",
+                                    middle: "",
+                                }
+                            } else if (coachScoreSheetStudentPlacement[j] != "empty") {
+                                var idx = coach.students.findIndex((student) => {
+                                    return (student.iD == coachScoreSheetStudentPlacement[j]);
+                                });
+                                scoreSheetRows[j] = {
+                                    iD: coachScoreSheetStudentPlacement[j],
+                                    last: coach.students[idx].last,
+                                    first: coach.students[idx].first,
+                                    middle: coach.students[idx].middle,
+                                }
+                            } else {
+                                scoreSheetRows[j] = null;
+                            }
+                        }
+                        if (!(anyNewStudents)) {
                             state = "readOnly";
                         } else { // Come here when the coach is adding one or more students to the roster.
-                            var needNames = [];
-                            for (j = numAddedStuds; j > 0; j--) {
-                                needNames.push(Number(coach.students[coach.students.length - j].iD)); //pick off ID's of New Student1, etc.
-                            }
                             var alphaStudents = makeAlphaStudentsList(coach);
-                            res.render("rosteredit.ejs", { //This render-return in the middle of a switch is necessary because only a computation determines whether the user is sent to the rosteredit page.
+                            res.render("addstudents.ejs", { //This render-return in the middle of a switch is necessary because only a computation determines whether the user is sent to the addstudents page.
                                 coachId: coach.iD,
+                                coachSchool: coach.school,
                                 session: coach.session,
-                                alphaStudents: alphaStudents,
-                                needNames: needNames, // This array contains the ID's of the students that aren't named yet.
-                                returnToCoach: true, // This flag tells the rosteredit page to call a post to /coach instead of /roster.
+                                scoreSheetRows: scoreSheetRows,
                             });
                             return;
                         }
                     } else { // Come here when there is at least one student listed multiple times.
                         state = "enterNames";
                         duplicates = true;
+                        duplicateErrorMessage = "You must not enter the same student multiple times";
                         coachScoreSheetStudentPlacement = tempCoachScoreSheetStudentPlacement;
                     }
                 } else {
@@ -1156,19 +1173,162 @@ app.post("/coach", (req, res)=>{
                     scoresLockedMsg = true;
                 }
                 break;
-            case "newStudents": // Come here when the rosteredit page handles "Add Student" selections on the scoresheet.
-                for (var j = 1; j <= req.body.numAddedStuds; j++) { //This is the final use of numAddedStuds. It remains reset to zero after this line.
-                    var idx = coach.students.findIndex((student) => {
-                        return (student.iD == req.body["studentId" + j]);
-                    });
-                    coach.students[idx].first = req.body["first" + j];
-                    coach.students[idx].middle = req.body["middle" + j];
-                    coach.students[idx].last = req.body["last" + j];
+            case "addStudents": // Come here when the addstudents page submits the new names.
+                // first we have to recover the indices where a new name must be added.
+                // I have to find an elegant way to replace the following repetitive code.
+                var newNames = [];
+                if (req.body.exists0 == "true") {
+                    newNames[0] = {
+                        exists: true,
+                        first: req.body.firstName0,
+                        middle: req.body.middleName0,
+                        last: req.body.lastName0,
+                    }
+                } else {
+                    newNames[0] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists1 == "true") {
+                    newNames[1] = {
+                        exists: true,
+                        first: req.body.firstName1,
+                        middle: req.body.middleName1,
+                        last: req.body.lastName1,
+                    }
+                } else {
+                    newNames[1] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists2 == "true") {
+                    newNames[2] = {
+                        exists: true,
+                        first: req.body.firstName2,
+                        middle: req.body.middleName2,
+                        last: req.body.lastName2,
+                    }
+                } else {
+                    newNames[2] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists3 == "true") {
+                    newNames[3] = {
+                        exists: true,
+                        first: req.body.firstName3,
+                        middle: req.body.middleName3,
+                        last: req.body.lastName3,
+                    }
+                } else {
+                    newNames[3] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists4 == "true") {
+                    newNames[4] = {
+                        exists: true,
+                        first: req.body.firstName4,
+                        middle: req.body.middleName4,
+                        last: req.body.lastName4,
+                    }
+                } else {
+                    newNames[4] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists5 == "true") {
+                    newNames[5] = {
+                        exists: true,
+                        first: req.body.firstName5,
+                        middle: req.body.middleName5,
+                        last: req.body.lastName5,
+                    }
+                } else {
+                    newNames[5] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists6 == "true") {
+                    newNames[6] = {
+                        exists: true,
+                        first: req.body.firstName6,
+                        middle: req.body.middleName6,
+                        last: req.body.lastName6,
+                    }
+                } else {
+                    newNames[6] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists7 == "true") {
+                    newNames[7] = {
+                        exists: true,
+                        first: req.body.firstName7,
+                        middle: req.body.middleName7,
+                        last: req.body.lastName7,
+                    }
+                } else {
+                    newNames[7] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists8 == "true") {
+                    newNames[8] = {
+                        exists: true,
+                        first: req.body.firstName8,
+                        middle: req.body.middleName8,
+                        last: req.body.lastName8,
+                    }
+                } else {
+                    newNames[8] = {
+                        exists: false,
+                    }
+                }
+                if (req.body.exists9 == "true") {
+                    newNames[9] = {
+                        exists: true,
+                        first: req.body.firstName9,
+                        middle: req.body.middleName9,
+                        last: req.body.lastName9,
+                    }
+                } else {
+                    newNames[9] = {
+                        exists: false,
+                    }
+                }
+                for (var j = 0; j < 10; j++) {
+                    if (newNames[j].exists) { // Check for duplicates on the roster
+                        if (isDuplicate({
+                            first: newNames[j].first,
+                            middle: newNames[j].middle,
+                            last: newNames[j].last,
+                            coachId: coach.iD,
+                        })) {
+                            duplicates = true;
+                            state = "enterNames";
+                            duplicateErrorMessage = "A student with the name " +
+                                    newNames[j].first + " " + 
+                                    newNames[j].middle + " " + 
+                                    newNames[j].last + " already exists on the roster.";
+                        } else {
+                            var newId = coach.students.length + 1;
+                            coach.students.push(
+                                {
+                                    first: newNames[j].first,
+                                    middle: newNames[j].middle,
+                                    last: newNames[j].last,
+                                    iD: newId,
+                                }
+                            );
+                            coach.scoreSheet.studentPlacement[j] = newId;
+                        }
+                    }
                 }
                 dObjectWrite("coach", coach);
                 var currentStatus = dObjectRead("contestStatus");
                 var alphaStudents = makeAlphaStudentsList(coach);
-                state = "readOnly";
+                // state = "readOnly"; already set above, and cannot be set again or it interferes with the duplicates check.
                 break;
             case "changePwd":
                 res.render("changePwd.ejs", {
@@ -1309,12 +1469,12 @@ app.post("/coach", (req, res)=>{
             coachFullName : coach.fullName, 
             coachSchool : coach.school,
             alphaStudents : alphaStudents,
-            numAddedStuds : numAddedStuds,
             coachScoreSheetStudentPlacement : coachScoreSheetStudentPlacement, // !=coach.scoreSheet.StudentPlacement when duplicates==true
             coachScoreSheetScores : coach.scoreSheet.scores,
             session : coach.session,
             displayShiftWarning : displayShiftWarning, // Not currently used. Do I need to warn coach that a shift has been made?
-            duplicates : duplicates, //flag to turn on the red error lines
+            duplicates: duplicates, //flag to turn on the red error lines
+            duplicateErrorMessage: duplicateErrorMessage,
             namesLockedMsg : namesLockedMsg,
             scoresLockedMsg : scoresLockedMsg,
             currentStatusHostSchool : currentStatus.hostSchool,
@@ -1336,6 +1496,7 @@ app.post("/coach", (req, res)=>{
 
 app.post("/roster", (req, res) => {
     var coach=dObjectRead("coach",req.body.coachId);
+    var namePushed = false; // Keeps track of whether a blank student was pushed onto the end of the list of students
     console.log(`${coach.iD}: Request to manage the roster`);
     if (coach.session == req.body.session) {
         if (req.body.requestType.startsWith("deleteStudent")) {
@@ -1345,6 +1506,10 @@ app.post("/roster", (req, res) => {
         switch (req.body.requestType) {
             case "manageRoster":
                 break;
+            case "neverMind": // Client selected "Add Student" and an empty student was pushed onto the student array. Then client selected "Cancel".
+                coach.students = coach.students.slice(0, -1);
+                dObjectWrite("coach", coach);
+                break;
             case "deleteStudent":
                 var idx = coach.students.findIndex((student) => {
                     return (student.iD == dStudentId);
@@ -1353,21 +1518,44 @@ app.post("/roster", (req, res) => {
                 dObjectWrite("coach", coach);
                 break;
             case "changeStudent":
-                var cStudentId = req.body.studentId1;
+                var cStudentId = req.body.studentId;
+                // Check for duplicate names
                 var idx = coach.students.findIndex((student) => {
                     return (student.iD == cStudentId);
                 });
-                coach.students[idx].first = req.body.first1;
-                coach.students[idx].middle = req.body.middle1;
-                coach.students[idx].last = req.body.last1;
-                dObjectWrite("coach", coach);
-                break;
+                if (isDuplicate({
+                        first: req.body.first,
+                        middle: req.body.middle,
+                        last: req.body.last,
+                        coachId: coach.iD,
+                    })) {
+                    var alphaStudents = makeAlphaStudentsList(coach);
+                    if (req.body.namePushed == "false") { namePushed = false; }
+                    if (req.body.namePushed == "true") { namePushed = true; }
+                    res.render("rosteredit.ejs", {
+                        alphaStudents: alphaStudents,
+                        coachId: coach.iD,
+                        session: coach.session,
+                        coachSchool: coach.school,
+                        needName: cStudentId,
+                        namePushed: namePushed,
+                        errorMsg: 'Name already used!. \n\n(Can\'t find that name on your roster? Maybe they\'ve been deleted. Click "cancel" and then click "undelete".)',
+                    });
+                    return;
+                } else {
+                    coach.students[idx].first = req.body.first;
+                    coach.students[idx].middle = req.body.middle;
+                    coach.students[idx].last = req.body.last;
+                    dObjectWrite("coach", coach);
+                    break;
+                }
             default:
         }
         var alphaStudents = makeAlphaStudentsList(coach);
         res.render("roster.ejs", {
             alphaStudents : alphaStudents,
-            coachId : coach.iD,
+            coachId: coach.iD,
+            coachSchool: coach.school,
             session : coach.session,
         });
     } else {
@@ -1378,28 +1566,32 @@ app.post("/roster", (req, res) => {
 });
 
 app.post("/rosteredit", (req, res) => {
+    var needName = -1; // The student ID that needs to be edited
+    var namePushed = false; // Keeps track of whether a blank student was pushed onto the end of the list of students
     var coach=dObjectRead("coach",req.body.coachId);
     var currentStatus = dObjectRead("contestStatus");
     console.log(`${coach.iD}: Request ${req.body.requestType}`);
-    if (coach.session == req.body.session) { 
+    if (coach.session == req.body.session) {
         if (req.body.requestType.startsWith("editStudent")) {
-            var editId = req.body.requestType.slice(11);
+            needName = Number(req.body.requestType.slice(11));
             req.body.requestType = "editStudent";
         }
         switch (req.body.requestType) {
             case "addStudent":
-                var editId = coach.students.length + 1;
+                // Check for duplicate names
+                needName = coach.students.length + 1;
                 coach.students.push(
                     {
-                        first: "New",
+                        first: "",
                         middle: "",
-                        last: " Student", // The space before the 'S' is to place it alphabetically first.
-                        iD: editId,
+                        last: "",
+                        iD: needName,
                     }
                 );
+                namePushed = true;
                 dObjectWrite("coach", coach);
                 break;
-            case "editStudent": // The work of "editStudent" was done above, when the value of editId was set.
+            case "editStudent": // The work of "editStudent" was done above, when the value of needName was set.
                 break;
             default:
                 console.log("Error: request type was neither 'addStudent' nor 'editStudent'.");
@@ -1429,9 +1621,10 @@ app.post("/rosteredit", (req, res) => {
         res.render("rosteredit.ejs", {
             alphaStudents : alphaStudents,
             coachId : coach.iD,
-            session : coach.session,
-            needNames : [Number(editId)],
-            returnToCoach : false,
+            session: coach.session,
+            coachSchool: coach.school,
+            needName: needName,
+            namePushed: namePushed,
         });
 
     } else {

@@ -5,6 +5,18 @@ body {
     font-family: Arial;
 }
 
+.left-aligned {
+    text-align: left;
+    white-space: nowrap;
+    width: 1px;
+}
+
+.narrow-table{
+    white-space: nowrap;
+    width: 1px;
+    display: inline-table;
+}
+
 p {
     margin: 0;
 }
@@ -41,11 +53,19 @@ h2 {
     padding: 1em;
 }
 
-.obuttonbar {
+.obuttonbar{
     position: relative;
     width: 95%;
     max-width: 21.5cm;
     min-height: 20px;
+    margin: auto;
+}
+
+.specialbuttonbar {
+    position: relative;
+    width: 95%;
+    max-width: 21.5cm;
+    min-height: 100px;
     margin: auto;
 }
 
@@ -77,6 +97,10 @@ button {
     background-color: rgb(240, 51, 51);
     color: white;
     border-radius: 4px;
+}
+
+.submitButton {
+    font-size: 24pt;
 }
 
 button:disabled {

@@ -46,7 +46,6 @@ function clickAction(element) {
 // Start of coachRegContest.js script
 
 // Initialization: Sum the rows and columns and style the boxes
-console.log("This is the start of coachRegContest.js");
 for (var k=0; k<10; k++) { // row k column j
     rowButtons[k] = document.querySelectorAll("button.clickrow" + k); // Create the 2D array rowButtons
     for (var j=0; j<10; j++) {

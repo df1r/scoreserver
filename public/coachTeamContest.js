@@ -19,7 +19,6 @@ function clickAction(element) {
 // Start of coachTeamContest.js script
 
 // Initialization: Sum the rows and columns and style the boxes
-console.log("This is the start of coachTeamContest.js");
 rowButtons = document.querySelectorAll("button.clickrow0"); // Create the 2D array rowButtons
 for (var j = 0; j < 10; j++) {
     rowButtons[j].qNumber = j;
