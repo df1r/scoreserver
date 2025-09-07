@@ -24,7 +24,7 @@
             </select>
             <label for="pwd">Password: </label>
             <input type="passWord" id="pwd" name="passWord" required autocomplete="off" />
-            <button type="submit" name="requestType" value="readOnly">login</button>
+            <button type="submit" name="requestType" value="readOnly" id="click-on-enter">login</button>
         </form>
 
     <% if (arrivalMsg == "bumped") { %>
@@ -42,5 +42,12 @@
             "password error, please retry"
             );</script>
     <%}%>
+    <script>
+        document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById("click-on-enter").click();
+            }
+        });
+    </script>
 </body>
 </html>

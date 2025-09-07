@@ -11,7 +11,7 @@
     <form action="/coach" method="post" id="tocoachpage">
         <input type="checkbox" checked="checked" class="invisible" name="coachId" value="<%=coachId%>" />
         <input type="checkbox" checked="checked" class="invisible" name="session" value="<%=session%>" />
-        <button type="submit" class="submitButton" name="requestType" value="addStudents">
+        <button type="submit" class="submitButton" name="requestType" value="addStudents" id="click-on-enter">
             Back to Scoresheet
         </button>
     </form>
@@ -66,6 +66,11 @@
     <% if (!(notYetFocused)) {%>
         <script>
             document.getElementById("focusHere").focus();
+            document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById("click-on-enter").click();
+                }
+            });
         </script>
     <%}%>
 </body>

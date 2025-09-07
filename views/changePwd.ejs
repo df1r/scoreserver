@@ -27,7 +27,7 @@
         <input type="password" id="secondEntry" required autocomplete="off"
             name="secondEntry" placeholder="newpassword" />
         <button type="submit" 
-            name="requestType" value="updatePwd">
+            name="requestType" value="updatePwd" id="click-on-enter">
             Submit Password Change
         </button>
 
@@ -43,5 +43,13 @@
             name="requestType" value="readOnly">
             Cancel
         </button>
+    </form>
+    <script>
+        document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById("click-on-enter").click();
+            }
+        });
+    </script>
 </body>
 </html>

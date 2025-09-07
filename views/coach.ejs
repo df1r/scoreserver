@@ -54,7 +54,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                     School:&nbsp;
                     <input type="text" placeholder="Enter school name" form="editTeam" name="coachSchool" 
                         value="<%=coachSchool%>" required />
-                    <button type="submit" form="editTeam" name="requestType" value="submitTeam" class="submitButton">
+                    <button type="submit" form="editTeam" name="requestType" value="submitTeam" class="submitButton" id="click-on-enter">
                         Save Changes
                     </button>
                     <button type="submit" form="mainForm" name="requestType" value="readOnly">
@@ -336,5 +336,12 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                 window.onload = function() {alert("Score entry is currently locked")};
             </script>
         <%}%>
+        <script>
+            document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById("click-on-enter").click();
+                }
+            });
+        </script>
     </body>
 </html>

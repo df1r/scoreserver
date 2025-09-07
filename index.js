@@ -658,7 +658,7 @@ app.post("/statistician", (req, res) => {
                 });
                 if (contestStatus.teamContest) { 
                     lines[0] = contestStatus.contestDate + "," + contestStatus.contestNumber;
-                    coachList.forEach((coach) => {  // The cb parameter "coach" is not used, but this seems like the clearest way to write loop.
+                    coachList.forEach((coach) => {  // The callback parameter "coach" is not used, but this seems like the clearest way to write loop.
                         lines[0] += ",".repeat(12);
                     });
                     lines[0] = lines[0].slice(0,-1); // Date, Contest number, then 11 empty cells for the first coach, 12 for each thereafter
@@ -669,7 +669,11 @@ app.post("/statistician", (req, res) => {
                     lines[1] = lines[1].slice(0, -1); // This is to remove the trailing comma after the final "Q10".
                     lines[2] = "";
                     coachList.forEach((coach) => { 
-                        lines[2] += "," + coach.fullName + "," + coach.scoreSheet.studentPlacement[0];
+                        if (coach.scoreSheet.scoresEntered) {
+                            lines[2] += "," + '"' + coach.fullName + '"' + ",1";
+                        } else {
+                            lines[2] += "," + '"' + coach.fullName + '"' + ",0";
+                        }
                         for (var k = 0; k < 10; k++) { 
                             lines[2] += "," + coach.scoreSheet.scores[0][k];
                         }
@@ -697,7 +701,7 @@ app.post("/statistician", (req, res) => {
                     coachList.forEach((coach) => { // filling row 3 with studentSeat 1 on the sheet
                         var studentId = coach.scoreSheet.studentPlacement[0];
                         if (studentId == "empty") { studentId = 0; }
-                        lines[2] += "," + coach.fullName + "," + studentId;
+                        lines[2] += "," + '"' + coach.fullName + '"' + "," + studentId;
                         for (var k = 0; k < 10; k++) { 
                             lines[2] += "," + coach.scoreSheet.scores[0][k];
                         }
@@ -1378,7 +1382,7 @@ app.post("/coach", (req, res)=>{
                 lines[1] = ",,," + coach.school + " Score Sheet" + ",".repeat(10) + coach.place;
                 lines[2] = ",".repeat(13); // row 3 is empty
                 lines[3] = "Coach,,,Venue,,,,Date,,Contest No,,,,";
-                lines[4] = coach.fullName + ",,," + contestStatus.hostSchool + ",".repeat(4) + contestStatus.contestDate + ",," + contestStatus.contestNumber + ",".repeat(4);
+                lines[4] = '""""' + coach.fullName + '"' + ",,," + contestStatus.hostSchool + ",".repeat(4) + contestStatus.contestDate + ",," + contestStatus.contestNumber + ",".repeat(4);
                 lines[5] = lines[2]; // row 6 is empty
                 if (!(contestStatus.teamContest)) { 
                     lines[6] = ",,Question No.:,1,2,3,4,5,6,7,8,9,10,Scores";
@@ -1393,7 +1397,7 @@ app.post("/coach", (req, res)=>{
                             var student = coach.students[coach.scoreSheet.studentPlacement[studentSeat - 1] - 1];
                             lines[row - 1] += student.last + "," + student.first;
                             if (student.middle != "") {
-                                lines[row - 1] += student.middle;
+                                lines[row - 1] += (" " + student.middle);
                             }
                         }
                         for (var k = 0; k < 10; k++) {

@@ -97,6 +97,7 @@ button {
     background-color: rgb(240, 51, 51);
     color: white;
     border-radius: 4px;
+    touch-action: manipulation;
 }
 
 .submitButton {

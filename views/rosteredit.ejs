@@ -37,7 +37,7 @@
         <input type="checkbox" checked="checked" class="invisible" 
             name="namePushed" value="<%=namePushed%>" />
         <div class="horizontalchildren">
-            <button type="submit" name="requestType" value="changeStudent" class="submitButton">
+            <button type="submit" name="requestType" value="changeStudent" class="submitButton" id="click-on-enter">
                 Save Changes
             </button>
             <button type="submit" form="neverMindForm" 
@@ -78,6 +78,11 @@
     <%}%>
     <script>
         document.getElementById("focusHere").focus();
+        document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById("click-on-enter").click();
+            }
+        });
     </script>
 </body>
 </html>
