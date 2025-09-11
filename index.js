@@ -1390,7 +1390,7 @@ app.post("/coach", (req, res)=>{
                     var varsityScores = [];
                     for (var row = 9; row < 14; row++){
                         var studentSeat = row - 8;
-                        lines[row - 1] = studentSeat + ":,";
+                        lines[row - 1] = studentSeat + ",";
                         if (coach.scoreSheet.studentPlacement[studentSeat - 1] == "empty") {
                             lines[row - 1] += ",";
                         } else {
@@ -1412,7 +1412,7 @@ app.post("/coach", (req, res)=>{
                     var JVScores = [];
                     for (var row = 15; row < 20; row++){
                         var studentSeat = row - 9;
-                        lines[row - 1] = studentSeat + ":,";
+                        lines[row - 1] = studentSeat + ",";
                         if (coach.scoreSheet.studentPlacement[studentSeat - 1] == "empty") {
                             lines[row - 1] += ",";
                         } else {

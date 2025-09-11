@@ -227,7 +227,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                                     <td>
                                         <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" 
                                             <%if (state != "enterNames") {%> disabled <%}%>>
-                                            <option value="empty">Choose a student</option> 
+                                            <option value="empty">------------</option> 
                                             <%alphaStudents.forEach((student)=>{%>
                                                 <option value="<%=student.iD%>" 
                                                     <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%>selected="selected"<%}%>>
@@ -271,7 +271,7 @@ Use pop-ups for statistician options so that auto-backup doesn't need restarting
                                     </th>
                                     <td>
                                         <select form="namesForm" name="<%='selectStudent'+k%>" class="namesrow" <%if(state !="enterNames" ){%>disabled <%}%>>
-                                            <option value="empty">Choose a student</option>
+                                            <option value="empty">------------</option>
                                             <%alphaStudents.forEach((student)=>{%>
                                                 <option value="<%=student.iD%>" 
                                                     <%if(coachScoreSheetStudentPlacement[k]==student.iD) {%> selected <%}%>>

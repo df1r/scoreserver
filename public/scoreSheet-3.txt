@@ -1,0 +1,20 @@
+,,,Central Jersey Math League,,,,,,,,,,Place:
+,,,Bridgewater-Raritan High School Score Sheet,,,,,,,,,,1
+,,,,,,,,,,,,,
+Coach,,,Venue,,,,Date,,Contest No,,,,
+""""Griffin, James",,,Monroe Township High School,,,,2024-09-25,,1,,,,
+,,,,,,,,,,,,,
+,,Question No.:,1,2,3,4,5,6,7,8,9,10,Scores
+,Lastname,First [Middle],,,,,,,,,,,
+1,Zhou,Ethan,1,1,1,1,0,0,0,0,0,0,4
+2,Banerjee,Aritra,1,1,1,1,1,1,1,1,1,0,9
+3,Bangaru,Saharsh,0,1,0,0,1,0,0,1,0,0,3
+4,Fang,Jay,0,1,1,1,0,0,1,1,0,0,5
+5,Gupta,Suyash,0,1,0,0,1,0,0,0,0,0,2
+Varsity:,,,,,,,,,,,,,18
+6,Liu (Lin?),Wesley,1,1,1,1,1,1,1,1,1,1,10
+7,,,0,0,0,0,0,0,0,0,0,0,0
+8,,,0,0,0,0,0,0,0,0,0,0,0
+9,,,0,0,0,0,0,0,0,0,0,0,0
+10,,,0,0,0,0,0,0,0,0,0,0,0
+JV:,,,,,,,,,,,,,10
