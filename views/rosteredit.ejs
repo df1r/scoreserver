@@ -21,14 +21,13 @@
     }
     %>
     <h1>Student Roster, <%=coachSchool%></h1>
-    <h2>Edit the student names in the fields below, then click "Save Changes".</h2>
+    <h2>Edit the student names in the fields below. Blue-highlighted fields are mandatory.</h2>
+    <h2>Click "Save Changes" when you are done.</h2>
     <form action="/roster" method="POST" id="neverMindForm">
         <input type="checkbox" checked="checked" class="invisible" name="coachId" value="<%=coachId%>" />
         <input type="checkbox" checked="checked" class="invisible" name="session" value="<%=session%>" />
         <input type="checkbox" checked="checked" class="invisible" name="namePushed" value="<%=namePushed%>" />
     </form>
-    <!-- The form below has one of two endpoints, chosen based on whether the user
-     is coming from roster.ejs or coach.ejs. -->
     <form action="/roster" method="POST">
         <input type="checkbox" checked="checked" class="invisible" 
             name="coachId" value="<%=coachId%>" />
@@ -37,7 +36,7 @@
         <input type="checkbox" checked="checked" class="invisible" 
             name="namePushed" value="<%=namePushed%>" />
         <div class="horizontalchildren">
-            <button type="submit" name="requestType" value="changeStudent" class="submitButton" id="click-on-enter">
+            <button type="submit" name="requestType" value="changeStudent" id="click-on-enter">
                 Save Changes
             </button>
             <button type="submit" form="neverMindForm" 
@@ -53,13 +52,13 @@
                             <td class="left-aligned">
                                 <input type="checkbox" checked="checked" class="invisible"
                                         name="studentId" value="<%=stud.iD%>" />
-                                <input type="text" name="last" value="<%=stud.last%>" id="focusHere"
-                                        placeholder="Lastname" required />
+                                <input type="text" name="last" value="<%=stud.last%>" id="focusHere" class="highLighted"
+                                        placeholder="(Type last name here)" required />
                             </td>
-                            <td class="left-aligned"><input type="text" name="first" value="<%=stud.first%>"
-                                    placeholder="Firstname" required /></td>
+                            <td class="left-aligned"><input type="text" name="first" value="<%=stud.first%>" class="highLighted"
+                                    placeholder="(Type first name here)" required /></td>
                             <td class="left-aligned"><input type="text" name="middle" value="<%=stud.middle%>" 
-                                    placeholder="Middle (optional)"/></td>
+                                    placeholder="(middle name optional)"/></td>
                         <%} else {%>
                             <td class="left-aligned"><p><%=stud.last%></p></td>
                             <td class="left-aligned"><p><%=stud.first%></p></td>
@@ -78,7 +77,7 @@
     <%}%>
     <script>
         document.getElementById("focusHere").focus();
-        document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 document.getElementById("click-on-enter").click();
             }

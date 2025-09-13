@@ -7,11 +7,11 @@
     <link rel="stylesheet" href="/coach.css">
 </head>
 <body>
-    <h1>Fill in a name for each new student on the scoresheet</h1>
+    <h1>Fill in a name for each new student on the scoresheet. Highlighted fields are mandatory.</h1>
     <form action="/coach" method="post" id="tocoachpage">
         <input type="checkbox" checked="checked" class="invisible" name="coachId" value="<%=coachId%>" />
         <input type="checkbox" checked="checked" class="invisible" name="session" value="<%=session%>" />
-        <button type="submit" class="submitButton" name="requestType" value="addStudents" id="click-on-enter">
+        <button type="submit" name="requestType" value="addStudents" id="click-on-enter">
             Back to Scoresheet
         </button>
     </form>
@@ -25,12 +25,12 @@
                     <tr>
                         <td><%=j+1%></td>
                         <td class="left-aligned">
-                            <input type="text" form="tocoachpage" placeholder="Lastname"
+                            <input type="text" form="tocoachpage" placeholder="Lastname" class="highLighted"
                                     name="<%='lastName' + j%>" required 
                                     <% if (notYetFocused) { notYetFocused = false; %> id="focusHere" <%}%> />
                         </td>
                         <td class="left-aligned">
-                            <input type="text" form="tocoachpage" placeholder="Firstname"
+                            <input type="text" form="tocoachpage" placeholder="Firstname" class="highLighted"
                                     name="<%='firstName' + j%>" required />
                         </td>
                         <td class="left-aligned">
@@ -49,7 +49,7 @@
                                 <td class="left-aligned"><%=locals.scoreSheetRows[j].first%></td>
                                 <td class="left-aligned"><%=locals.scoreSheetRows[j].middle%></td>
                             <%} else {%>
-                                <td>empty</td><td>empty</td><td>empty</td>
+                                <td>--------</td><td>--------</td><td>--------</td>
                             <%}%>
                         </p>
                     </tr>
@@ -66,7 +66,7 @@
     <% if (!(notYetFocused)) {%>
         <script>
             document.getElementById("focusHere").focus();
-            document.querySelector('#txtSearch').addEventListener('keydown', function (e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     document.getElementById("click-on-enter").click();
                 }
